@@ -6,12 +6,34 @@
 #include <sys/socket.h> 
 #include <sys/types.h> 
 
-
 //server socket port number: random number between 4096 and 65k
+
+
+void func(int sockfd){
+	char buff[100];
+	int n;
+	for (;;){
+		bzero(buff,100);
+		read(sockfd,buff,sizeof(buff));
+		printf("From clien: %s\tTo client:", buff);
+		bzero(buff,100);
+		n = 0;
+		while((buff[n++] = getchar())!='\n');
+		write(sockfd,buff,sizeof(buff));
+		if (strncmp("exit",buff,4) == 0){
+			printf("server exit\n");
+			break;
+		}
+	}
+
+}
+
+
 
 int main(int argc, char** argv){
 
-	unsigned short PORT = (unsigned short) strtoul(argv[2]);
+	unsigned short PORT; 
+	sscanf(argv[1],"hi",&PORT);
 
 	int sockfd, connfd, len; 
     struct sockaddr_in server_addy, cli; 
@@ -59,9 +81,9 @@ int main(int argc, char** argv){
   
 
 
+	func(connfd);
 
-
-	return 0;	
+		
 
 
 }

@@ -22,12 +22,32 @@ int checkCommand(char* str){
 	return 0;
 
 }
+void func(int sockfd){
+	char buff[100];
+	int n;
+	for (;;){
+		bzero(buff,sizeof(buff));
+		printf("enter a string : ");
+		n = 0;
+		while((buff[n++] = getchar()) != '\n');
+		write(sockfd,buff,sizeof(buff));
+		bzero(buff,sizeof(buff));
+		read(sockfd,buff,sizeof(buff));
+		printf("From Server:%s ", buff);
+		if ((strncmp(buff,"exit",4)) == 0) {
+			printf("exiting...\n");
+			break;
+		}
+	}
+}
+
 
 
 int main(int argc, char* argv[] ){
 	
 	char* hostname = argv[1];
-	int port_num = atoi(argv[2]);
+	unsigned short port_num;
+	sscanf(argv[2], "%hi", &port_num);
 	
 	//TODO connect to server here
 	
@@ -51,20 +71,17 @@ int main(int argc, char* argv[] ){
 	
 	
 
-	server_addy.sin_addr = *(struct in_addr *) host->h_addr_list;
-
-
+	server_addy.sin_addr = *(struct in_addr* ) host->h_addr_list[0];
 	server_addy.sin_family = AF_INET;
-	//server_addy.sin_addr.s_addr = inet_addr(ip);
-	//server_addy.sin_addr = *((struct in_addr *) host->h_addr_list[0]);
-	//memcpy(&(server_addy.sin_addr.s_addr), host->h_addr_list[0], host->h_length);
 	server_addy.sin_port = htons(port_num);
-	
-	if(connect(sockfd, (struct sockaddr *) &server_addy, sizeof(server_addy)) < 0){
+	printf("here\n");	
+	int status = connect(sockfd, (struct sockaddr *) &server_addy, sizeof(server_addy));
+	printf("here 2\n");
+	if (status != 0){
 		printf("could not be connected :(\n");
 		return 0;
 	}
-	
+	else printf("connecting...\n");	
 	
 	
 	//printf("connected!!!!\n");
@@ -89,6 +106,7 @@ int main(int argc, char* argv[] ){
 	}
 	printf("exitted loop\n");	
 	*/
-	return 0;
+	printf("do stuff here\n");
+	func(sockfd);
 
 }
