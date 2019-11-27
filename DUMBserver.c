@@ -36,8 +36,15 @@ void checkCommands(int connfd){
 	char command[100];
 	for (;;){
 		read(connfd, command, sizeof(command));
-		printf("client sent command: %s\n", command);	
-		if (strcmp(command,"exit") == 0) break;
+        if (command[0] == '\0') break;
+
+        if(strcmp(command,"exit") == 0) break;	
+
+		printf("client sent command: %s\nSend a message to the client: \n", command);
+        scanf("%s", command);
+        write(sockfd,command,sizeof(command));
+
+		if(strcmp(command,"exit") == 0) break;	
 	}
 }	
 
@@ -63,7 +70,7 @@ int main(int argc, char* argv[]){
     serv_addr.sin_port = htons(port_num); 
   
     //bind 
-    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { 
+    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) != 0) { 
         printf("socket binding error...\n"); 
         return 0;
     } 
@@ -77,8 +84,7 @@ int main(int argc, char* argv[]){
     int size = sizeof(client_addr); 
   
     //accept the connection
-    connfd = accept(sockfd, (struct sockaddr*)&client_addr, &size); 
-    if (connfd < 0) { 
+    if (connfd = accept(sockfd, (struct sockaddr*)&client_addr, &size) != 0) { 
         printf("connecting error\n"); 
         return 0;
     } 

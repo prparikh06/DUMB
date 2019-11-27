@@ -54,6 +54,10 @@ void checkCommands(int sockfd){
 		write(sockfd,command,sizeof(command));		
 		if(strcmp(command,"exit") == 0) break;	
 
+		read(connfd, command, sizeof(command));
+		if (command[0] == '\0') break;
+		printf("server sent command: %s\nSend a message to the server: \n", command);
+	
 	}
 	printf("exited client\n");	
 }
@@ -80,7 +84,6 @@ int main(int argc, char* argv[] ){
 
 	}
 	
-	
 	bzero(&serv_addr, sizeof(serv_addr));
 	
 	//initialize socket
@@ -88,18 +91,21 @@ int main(int argc, char* argv[] ){
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(port_num);
 	
-	int status = connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-	
-	if (status != 0){
-		printf("could not be connected :(\n");
-		return 0;
+	while(numAttempts < 3){
+		
+		if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0){
+			printf("could not be connected :(\n");
+			numAttempts++;
+		}
+
+		else break; //connect successful
+
 	}
-	
-	
 	
 	//accpet some commands (HELLO)
 	printf("HELLO!\n");
 
 	checkCommands(sockfd);
+
 	close(sockfd);
 }
