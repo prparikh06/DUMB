@@ -7,6 +7,8 @@
 #include <sys/types.h> 
 
 //server socket port number: random number between 4096 and 65k
+//ip address has to be that of the server
+
 /*
 void func(int sockfd){
 	char buff[100];
@@ -28,9 +30,16 @@ void func(int sockfd){
 }
 */
 
-void checkCommands(int connfd){
 
-}
+//This function will read the client's messages/commands
+void checkCommands(int connfd){
+	char command[100];
+	for (;;){
+		read(connfd, command, sizeof(command));
+		printf("client sent command: %s\n", command);	
+		if (strcmp(command,"exit") == 0) break;
+	}
+}	
 
 int main(int argc, char* argv[]){
 
@@ -41,7 +50,7 @@ int main(int argc, char* argv[]){
   
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
 
-    if (sockfd != 0) { 
+    if (sockfd < 0) { 
         printf("could not create socket\n"); 
         return 0; 
     } 
@@ -75,5 +84,6 @@ int main(int argc, char* argv[]){
     } 
     
 	checkCommands(connfd);
+	close(sockfd);
 
 }

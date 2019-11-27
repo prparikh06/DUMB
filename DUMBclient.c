@@ -48,13 +48,14 @@ void checkCommands(int sockfd){
 	while(acceptCommands != 0){ //while commands are getting inputted
 		char command[100];
 		scanf("%s", command);
-		if (isAcceptedCommand(command) != 1)
+		/*if (isAcceptedCommand(command) != 1)
 			acceptCommands = 0;
-		
-		printf("command is %s\n", command);
+		*/
+		write(sockfd,command,sizeof(command));		
+		if(strcmp(command,"exit") == 0) break;	
 
 	}
-	printf("exitted loop\n");	
+	printf("exited client\n");	
 }
 
 
@@ -100,5 +101,5 @@ int main(int argc, char* argv[] ){
 	printf("HELLO!\n");
 
 	checkCommands(sockfd);
-
+	close(sockfd);
 }
