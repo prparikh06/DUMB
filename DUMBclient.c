@@ -106,8 +106,5 @@ int main(int argc, char* argv[] ){
 
 	checkCommands(sockfd);
 
-<<<<<<< HEAD
 	close(sockfd);
-=======
->>>>>>> parent of bb4e43f... need to add multithreading
 }

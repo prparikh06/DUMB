@@ -29,25 +29,16 @@ void func(int sockfd){
 */
 
 void checkCommands(int connfd){
-<<<<<<< HEAD
 	char command[100];
 	for (;;){
 		read(connfd, command, sizeof(command));
-        if (command[0] == '\0') break;
-
+        
         if(strcmp(command,"exit") == 0) break;	
 
-		printf("client sent command: %s\nSend a message to the client: \n", command);
-        scanf("%s", command);
-        write(sockfd,command,sizeof(command));
-
-		if(strcmp(command,"exit") == 0) break;	
+		printf("client sent command: %s\n", command);
+       	
 	}
 }	
-=======
-
-}
->>>>>>> parent of bb4e43f... need to add multithreading
 
 int main(int argc, char* argv[]){
 
@@ -71,7 +62,7 @@ int main(int argc, char* argv[]){
     serv_addr.sin_port = htons(port_num); 
   
     //bind 
-    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) != 0) { 
+    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { 
         printf("socket binding error...\n"); 
         return 0;
     } 
