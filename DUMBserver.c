@@ -30,13 +30,15 @@ void func(int sockfd){
 
 
 
-int main(int argc, char** argv){
+int main(int argc, char* argv[]){
 
-	unsigned short PORT; 
+	int PORT = atoi(argv[1]);
+
+	/*unsigned short PORT; 
 	sscanf(argv[1],"hi",&PORT);
-
+	*/
 	int sockfd, connfd, len; 
-    struct sockaddr_in server_addy, cli; 
+    struct sockaddr_in serv_addr, cli; 
   
     // socket create and verification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
@@ -46,28 +48,24 @@ int main(int argc, char** argv){
     } 
     else
         printf("Socket successfully created..\n"); 
-    bzero(&server_addy, sizeof(server_addy)); 
+    bzero((char*)&serv_addr, sizeof(serv_addr)); 
   
     // assign IP, PORT 
-    server_addy.sin_family = AF_INET; 
-    server_addy.sin_addr.s_addr = htonl(INADDR_ANY); 
-    server_addy.sin_port = htons(PORT); 
+    serv_addr.sin_family = AF_INET; 
+    serv_addr.sin_addr.s_addr = INADDR_ANY; 
+    serv_addr.sin_port = htons(PORT); 
   
     // Binding newly created socket to given IP and verification 
-    if ((bind(sockfd, (struct sockaddr*)&server_addy, sizeof(server_addy))) != 0) { 
+    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { 
         printf("socket bind failed...\n"); 
-        exit(0); 
+        return 0;
     } 
     else
         printf("Socket successfully binded..\n"); 
   
     // Now server is ready to listen and verification 
-    if ((listen(sockfd, 5)) != 0) { 
-        printf("Listen failed...\n"); 
-        exit(0); 
-    } 
-    else
-        printf("Server listening..\n"); 
+    listen(sockfd, 5); 
+    
     len = sizeof(cli); 
   
     // Accept the data packet from client and verification 

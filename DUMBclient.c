@@ -1,12 +1,13 @@
-#include <netdb.h> 
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <string.h> 
 #include <sys/socket.h>
-
 #include <sys/types.h> 
 #include <netinet/in.h> 
-
+#include <unistd.h>
+#include <pthread.h>
+#include <netdb.h>
+#include <signal.h>
 
 //52613
 int numAttempts = 0;
@@ -46,8 +47,11 @@ void func(int sockfd){
 int main(int argc, char* argv[] ){
 	
 	char* hostname = argv[1];
+	/*
 	unsigned short port_num;
 	sscanf(argv[2], "%hi", &port_num);
+	*/
+	int port_num = atoi(argv[2]);
 	
 	//TODO connect to server here
 	
@@ -70,27 +74,19 @@ int main(int argc, char* argv[] ){
 	bzero(&server_addy, sizeof(server_addy));
 	
 	
-
-	server_addy.sin_addr = *(struct in_addr* ) host->h_addr_list[0];
+	//bcopy((char*) host->h_addr_list[0], (char*) &server_addy.sin_addr.s_addr,host->h_length);
+	server_addy.sin_addr = *(struct in_addr* )* host->h_addr_list;
 	server_addy.sin_family = AF_INET;
 	server_addy.sin_port = htons(port_num);
-	printf("here\n");	
 	int status = connect(sockfd, (struct sockaddr *) &server_addy, sizeof(server_addy));
-	printf("here 2\n");
+	
 	if (status != 0){
 		printf("could not be connected :(\n");
 		return 0;
 	}
+	
 	else printf("connecting...\n");	
-	
-	
-	//printf("connected!!!!\n");
-
-	
-
-	//TODO do stuff
-
-	
+				
 	/*	
 	//accpet some commands (HELLO)
 	printf("HELLO!\n");
