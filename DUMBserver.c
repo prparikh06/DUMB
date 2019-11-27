@@ -7,8 +7,7 @@
 #include <sys/types.h> 
 
 //server socket port number: random number between 4096 and 65k
-
-
+/*
 void func(int sockfd){
 	char buff[100];
 	int n;
@@ -27,61 +26,54 @@ void func(int sockfd){
 	}
 
 }
+*/
 
+void checkCommands(int connfd){
 
+}
 
 int main(int argc, char* argv[]){
 
-	int PORT = atoi(argv[1]);
-
-	/*unsigned short PORT; 
-	sscanf(argv[1],"hi",&PORT);
-	*/
-	int sockfd, connfd, len; 
-    struct sockaddr_in serv_addr, cli; 
+	int port_num = atoi(argv[1]);
+	
+	int sockfd, connfd; 
+    struct sockaddr_in serv_addr, client_addr; 
   
-    // socket create and verification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
-    if (sockfd == -1) { 
-        printf("socket creation failed...\n"); 
+
+    if (sockfd != 0) { 
+        printf("could not create socket\n"); 
         return 0; 
     } 
-    else
-        printf("Socket successfully created..\n"); 
+    
     bzero((char*)&serv_addr, sizeof(serv_addr)); 
-  
-    // assign IP, PORT 
+    
+    //initialize server socket
     serv_addr.sin_family = AF_INET; 
     serv_addr.sin_addr.s_addr = INADDR_ANY; 
-    serv_addr.sin_port = htons(PORT); 
+    serv_addr.sin_port = htons(port_num); 
   
-    // Binding newly created socket to given IP and verification 
+    //bind 
     if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { 
-        printf("socket bind failed...\n"); 
+        printf("socket binding error...\n"); 
         return 0;
     } 
-    else
-        printf("Socket successfully binded..\n"); 
-  
-    // Now server is ready to listen and verification 
-    listen(sockfd, 5); 
-    
-    len = sizeof(cli); 
-  
-    // Accept the data packet from client and verification 
-    connfd = accept(sockfd, (struct sockaddr*)&cli, &len); 
-    if (connfd < 0) { 
-        printf("server acccept failed...\n"); 
-        exit(0); 
+
+    //listen
+    if (listen(sockfd, 5) != 0){
+        printf("listening error\n");
+        return 0;
     } 
-    else
-        printf("server acccept the client...\n"); 
+    
+    int size = sizeof(client_addr); 
   
-
-
-	func(connfd);
-
-		
-
+    //accept the connection
+    connfd = accept(sockfd, (struct sockaddr*)&client_addr, &size); 
+    if (connfd < 0) { 
+        printf("connecting error\n"); 
+        return 0;
+    } 
+    
+	checkCommands(connfd);
 
 }

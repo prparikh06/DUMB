@@ -13,16 +13,7 @@
 int numAttempts = 0;
 char* commandOptions[] = {"quit", "create", "delete", "open", "close", "next", "put"};
 
-
-int checkCommand(char* str){
-
-	for (int i = 0; i < 7; i++){
-		if(strcmp(str,commandOptions[i]) == 0)
-			return 1;
-	}
-	return 0;
-
-}
+/*
 void func(int sockfd){
 	char buff[100];
 	int n;
@@ -41,68 +32,73 @@ void func(int sockfd){
 		}
 	}
 }
+*/
 
+int isAcceptedCommand(char* str){
 
-
-int main(int argc, char* argv[] ){
-	
-	char* hostname = argv[1];
-	/*
-	unsigned short port_num;
-	sscanf(argv[2], "%hi", &port_num);
-	*/
-	int port_num = atoi(argv[2]);
-	
-	//TODO connect to server here
-	
-	int sockfd = socket(AF_INET, SOCK_STREAM,0);
-	if (sockfd < 0){ //TODO Error
-		printf("error\n");
-		return 0;
+	for (int i = 0; i < 7; i++){
+		if(strcmp(str,commandOptions[i]) == 0)
+			return 1;
 	}
-	
-	char* ip;
-	struct hostent *host = gethostbyname(hostname);
-	
-	if (host == NULL){ //TODO error
-		printf("hostname error\n");
-		return 0;
+	return 0;
+}
 
-	}
-	
-	struct sockaddr_in server_addy;
-	bzero(&server_addy, sizeof(server_addy));
-	
-	
-	//bcopy((char*) host->h_addr_list[0], (char*) &server_addy.sin_addr.s_addr,host->h_length);
-	server_addy.sin_addr = *(struct in_addr* )* host->h_addr_list;
-	server_addy.sin_family = AF_INET;
-	server_addy.sin_port = htons(port_num);
-	int status = connect(sockfd, (struct sockaddr *) &server_addy, sizeof(server_addy));
-	
-	if (status != 0){
-		printf("could not be connected :(\n");
-		return 0;
-	}
-	
-	else printf("connecting...\n");	
-				
-	/*	
-	//accpet some commands (HELLO)
-	printf("HELLO!\n");
+void checkCommands(int sockfd){
 	int acceptCommands = 1;
 	while(acceptCommands != 0){ //while commands are getting inputted
 		char command[100];
 		scanf("%s", command);
-		if (checkCommand(command) != 1)
+		if (isAcceptedCommand(command) != 1)
 			acceptCommands = 0;
 		
 		printf("command is %s\n", command);
 
 	}
 	printf("exitted loop\n");	
-	*/
-	printf("do stuff here\n");
-	func(sockfd);
+}
+
+
+int main(int argc, char* argv[] ){
+	
+	char* hostname = argv[1];
+	int port_num = atoi(argv[2]);
+	struct sockaddr_in serv_addr;
+
+	int sockfd = socket(AF_INET, SOCK_STREAM,0);
+	
+	if (sockfd < 0){ 
+		printf("could not create socket\n"); 
+        return 0; 
+	}
+	
+	struct hostent *host = gethostbyname(hostname);
+	
+	if (host == NULL){ 
+		printf("hostname error\n");
+		return 0;
+
+	}
+	
+	
+	bzero(&serv_addr, sizeof(serv_addr));
+	
+	//initialize socket
+	serv_addr.sin_addr = *(struct in_addr* )* host->h_addr_list;
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(port_num);
+	
+	int status = connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+	
+	if (status != 0){
+		printf("could not be connected :(\n");
+		return 0;
+	}
+	
+	
+	
+	//accpet some commands (HELLO)
+	printf("HELLO!\n");
+
+	checkCommands(sockfd);
 
 }
