@@ -10,6 +10,9 @@
 //server socket port number: random number between 4096 and 65k
 
 int main(int argc, char** argv){
+
+	int PORT = atoi(argv[2]);
+
 	int sockfd, connfd, len; 
     struct sockaddr_in servaddr, cli; 
   
@@ -26,10 +29,10 @@ int main(int argc, char** argv){
     // assign IP, PORT 
     servaddr.sin_family = AF_INET; 
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY); 
-    servaddr.sin_port = htons(PORT); 
+    servaddr.sin_port = htons(argv); 
   
     // Binding newly created socket to given IP and verification 
-    if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) { 
+    if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) { 
         printf("socket bind failed...\n"); 
         exit(0); 
     } 
@@ -46,7 +49,7 @@ int main(int argc, char** argv){
     len = sizeof(cli); 
   
     // Accept the data packet from client and verification 
-    connfd = accept(sockfd, (SA*)&cli, &len); 
+    connfd = accept(sockfd, (struct sockaddr*)&cli, &len); 
     if (connfd < 0) { 
         printf("server acccept failed...\n"); 
         exit(0); 
