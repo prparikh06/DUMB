@@ -11,28 +11,28 @@
 
 int main(int argc, char** argv){
 
-	int PORT = atoi(argv[2]);
+	unsigned short PORT = (unsigned short) strtoul(argv[2]);
 
 	int sockfd, connfd, len; 
-    struct sockaddr_in servaddr, cli; 
+    struct sockaddr_in server_addy, cli; 
   
     // socket create and verification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfd == -1) { 
         printf("socket creation failed...\n"); 
-        exit(0); 
+        return 0; 
     } 
     else
         printf("Socket successfully created..\n"); 
-    bzero(&servaddr, sizeof(servaddr)); 
+    bzero(&server_addy, sizeof(server_addy)); 
   
     // assign IP, PORT 
-    servaddr.sin_family = AF_INET; 
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); 
-    servaddr.sin_port = htons(argv); 
+    server_addy.sin_family = AF_INET; 
+    server_addy.sin_addr.s_addr = htonl(INADDR_ANY); 
+    server_addy.sin_port = htons(PORT); 
   
     // Binding newly created socket to given IP and verification 
-    if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) { 
+    if ((bind(sockfd, (struct sockaddr*)&server_addy, sizeof(server_addy))) != 0) { 
         printf("socket bind failed...\n"); 
         exit(0); 
     } 
