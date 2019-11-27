@@ -53,7 +53,7 @@ void checkCommands(int sockfd){
 		
 		printf("command is %s\n", command);
 
-		read(connfd, command, sizeof(command));
+		read(sockfd, command, sizeof(command));
 		if (command[0] == '\0') break;
 		printf("server sent command: %s\nSend a message to the server: \n", command);
 	

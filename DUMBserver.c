@@ -49,7 +49,7 @@ int main(int argc, char* argv[]){
   
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
 
-    if (sockfd != 0) { 
+    if (sockfd < 0) { 
         printf("could not create socket\n"); 
         return 0; 
     } 
