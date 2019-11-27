@@ -48,18 +48,17 @@ void checkCommands(int sockfd){
 	while(acceptCommands != 0){ //while commands are getting inputted
 		char command[100];
 		scanf("%s", command);
-		/*if (isAcceptedCommand(command) != 1)
+		if (isAcceptedCommand(command) != 1)
 			acceptCommands = 0;
-		*/
-		write(sockfd,command,sizeof(command));		
-		if(strcmp(command,"exit") == 0) break;	
+		
+		printf("command is %s\n", command);
 
 		read(connfd, command, sizeof(command));
 		if (command[0] == '\0') break;
 		printf("server sent command: %s\nSend a message to the server: \n", command);
 	
 	}
-	printf("exited client\n");	
+	printf("exitted loop\n");	
 }
 
 
@@ -107,5 +106,8 @@ int main(int argc, char* argv[] ){
 
 	checkCommands(sockfd);
 
+<<<<<<< HEAD
 	close(sockfd);
+=======
+>>>>>>> parent of bb4e43f... need to add multithreading
 }

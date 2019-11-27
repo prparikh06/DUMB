@@ -7,8 +7,6 @@
 #include <sys/types.h> 
 
 //server socket port number: random number between 4096 and 65k
-//ip address has to be that of the server
-
 /*
 void func(int sockfd){
 	char buff[100];
@@ -30,9 +28,8 @@ void func(int sockfd){
 }
 */
 
-
-//This function will read the client's messages/commands
 void checkCommands(int connfd){
+<<<<<<< HEAD
 	char command[100];
 	for (;;){
 		read(connfd, command, sizeof(command));
@@ -47,6 +44,10 @@ void checkCommands(int connfd){
 		if(strcmp(command,"exit") == 0) break;	
 	}
 }	
+=======
+
+}
+>>>>>>> parent of bb4e43f... need to add multithreading
 
 int main(int argc, char* argv[]){
 
@@ -57,7 +58,7 @@ int main(int argc, char* argv[]){
   
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
 
-    if (sockfd < 0) { 
+    if (sockfd != 0) { 
         printf("could not create socket\n"); 
         return 0; 
     } 
@@ -90,6 +91,5 @@ int main(int argc, char* argv[]){
     } 
     
 	checkCommands(connfd);
-	close(sockfd);
 
 }
