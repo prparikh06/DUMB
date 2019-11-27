@@ -48,14 +48,14 @@ void checkCommands(int sockfd){
 	while(acceptCommands != 0){ //while commands are getting inputted
 		char command[100];
 		scanf("%s", command);
-		if (isAcceptedCommand(command) != 1)
+		/*if (isAcceptedCommand(command) != 1)
 			acceptCommands = 0;
-		
+		*/
+
 		printf("command is %s\n", command);
 
-		read(sockfd, command, sizeof(command));
-		if (command[0] == '\0') break;
-		printf("server sent command: %s\nSend a message to the server: \n", command);
+		write(sockfd, command, sizeof(command));
+		if (strcmp(command,"exit") == 0) break;
 	
 	}
 	printf("exitted loop\n");	
@@ -90,13 +90,16 @@ int main(int argc, char* argv[] ){
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(port_num);
 	
-	while(numAttempts < 3){
+	while(1){
+		 if (numAttempts == 3){
+			printf("3 attempts\n");
+			return 0;
+		}
 		
 		if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0){
 			printf("could not be connected :(\n");
 			numAttempts++;
 		}
-
 		else break; //connect successful
 
 	}

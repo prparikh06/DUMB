@@ -33,7 +33,7 @@ void checkCommands(int connfd){
 	for (;;){
 		read(connfd, command, sizeof(command));
         
-        if(strcmp(command,"exit") == 0) break;	
+        	if(strcmp(command,"exit") == 0) break;	
 
 		printf("client sent command: %s\n", command);
        	
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
     int size = sizeof(client_addr); 
   
     //accept the connection
-    if (connfd = accept(sockfd, (struct sockaddr*)&client_addr, &size) != 0) { 
+    if (connfd = accept(sockfd, (struct sockaddr*)&client_addr, &size) < 0) { 
         printf("connecting error\n"); 
         return 0;
     } 
