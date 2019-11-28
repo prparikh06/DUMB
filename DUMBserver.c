@@ -7,13 +7,13 @@
 #include <sys/types.h> 
 
 //server socket port number: random number between 4096 and 65k
-/*
+
 void func(int sockfd){
 	char buff[100];
 	int n;
 	for (;;){
 		bzero(buff,100);
-		read(sockfd,buff,sizeof(buff));
+		read(sockfd,buff,strlen(buff));
 		printf("From clien: %s\tTo client:", buff);
 		bzero(buff,100);
 		n = 0;
@@ -26,18 +26,16 @@ void func(int sockfd){
 	}
 
 }
-*/
 
 void checkCommands(int connfd){
 	char command[100];
-	for (;;){
-		read(connfd, command, sizeof(command));
-        
-        	if(strcmp(command,"exit") == 0) break;	
+	//while(recv(connfd,command,100,0) > 0){
+        for(;;){
+		read(connfd,command,sizeof(command));
+        	printf("client sent command: %s\n", command);
+		if(strcmp(command,"exit") == 0) break;		
+       }	
 
-		printf("client sent command: %s\n", command);
-       	
-	}
 }	
 
 int main(int argc, char* argv[]){
@@ -80,7 +78,8 @@ int main(int argc, char* argv[]){
         printf("connecting error\n"); 
         return 0;
     } 
-    
-	checkCommands(connfd);
-
+   	printf("sockfd: %d\n", sockfd); 
+	//checkCommands(connfd);
+	func(connfd);
+	close(sockfd);
 }

@@ -13,8 +13,7 @@
 int numAttempts = 0;
 char* commandOptions[] = {"quit", "create", "delete", "open", "close", "next", "put"};
 
-/*
-void func(int sockfd){
+void func (int sockfd){
 	char buff[100];
 	int n;
 	for (;;){
@@ -22,7 +21,7 @@ void func(int sockfd){
 		printf("enter a string : ");
 		n = 0;
 		while((buff[n++] = getchar()) != '\n');
-		write(sockfd,buff,sizeof(buff));
+		write(sockfd,buff,strlen(buff));
 		bzero(buff,sizeof(buff));
 		read(sockfd,buff,sizeof(buff));
 		printf("From Server:%s ", buff);
@@ -32,7 +31,7 @@ void func(int sockfd){
 		}
 	}
 }
-*/
+
 
 int isAcceptedCommand(char* str){
 
@@ -53,12 +52,12 @@ void checkCommands(int sockfd){
 		*/
 
 		printf("command is %s\n", command);
-
-		write(sockfd, command, sizeof(command));
+		//write(sockfd,command,sizeof(command));
+		send(sockfd, command, strlen(command),0);
 		if (strcmp(command,"exit") == 0) break;
 	
 	}
-	printf("exitted loop\n");	
+	printf("exited loop\n");	
 }
 
 
@@ -96,8 +95,8 @@ int main(int argc, char* argv[] ){
 	
 	//accpet some commands (HELLO)
 	printf("HELLO!\n");
-
-	checkCommands(sockfd);
-
+	printf("sockfd: %d\n", sockfd);
+	//checkCommands(sockfd);
+	func(sockfd);
 	close(sockfd);
 }
