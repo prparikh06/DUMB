@@ -46,6 +46,22 @@ void func(int sockfd)
 } 
   
 
+void readCommands(int sockfd){
+
+	char message[1024];
+	for (;;){
+		bzero(message,sizeof(message));
+		printf("Enter a message...\n");
+		scanf("%s", message);
+		printf("message is: %s\n", message);
+		write(sockfd, message,sizeof(message));
+		if (strcmp(message,"exit") == 0) break;
+		
+	}
+}
+
+
+
 int main(int argc, char* argv[]) { 
     int sockfd, connfd; 
     struct sockaddr_in servaddr, cli; 
@@ -80,10 +96,8 @@ int main(int argc, char* argv[]) {
     else
         printf("connected!!!\n"); 
   
-    // function for chat 
-    func(sockfd); 
+    readCommands(sockfd); 
   
-    // close the socket 
     close(sockfd); 
 } 
 

@@ -37,6 +37,22 @@ void func(int sockfd)
     } 
 } 
 
+
+void interpretCommands(int connfd){
+	char message[1024];
+	for (;;){
+		bzero(message,sizeof(message));
+		read(connfd,message,sizeof(message));
+		printf("client sent message: %s\n", message);
+		if (strcmp(message, "exit") == 0) break;
+		
+	}
+
+}
+
+
+
+
 int main(int argc, char* argv[]) { 
     int sockfd, connfd; 
     struct sockaddr_in servaddr, clientaddr; 
@@ -48,9 +64,7 @@ int main(int argc, char* argv[]) {
     if (sockfd == -1) { 
        return 0; 
     } 
-    else
-        printf("Socket successfully created..\n"); 
-    
+   
     bzero(&servaddr, sizeof(servaddr)); 
   
     // assign IP, PORT 
@@ -83,9 +97,8 @@ int main(int argc, char* argv[]) {
     else
         printf("accepted!!!\n"); 
   
-    // Function for chatting between client and server 
-    func(connfd); 
-  
-    // After chatting close the socket 
-    close(sockfd); 
+
+   interpretCommands(connfd); 
+ 
+   close(sockfd); 
 } 
