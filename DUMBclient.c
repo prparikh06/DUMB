@@ -23,86 +23,70 @@ int checkCommand(char* str){
 	return 0;
 
 }
-void func(int sockfd){
-	char buff[100];
-	int n;
-	for (;;){
-		bzero(buff,sizeof(buff));
-		printf("enter a string : ");
-		n = 0;
-		while((buff[n++] = getchar()) != '\n');
-		write(sockfd,buff,sizeof(buff));
-		bzero(buff,sizeof(buff));
-		read(sockfd,buff,sizeof(buff));
-		printf("From Server:%s ", buff);
-		if ((strncmp(buff,"exit",4)) == 0) {
-			printf("exiting...\n");
-			break;
-		}
-	}
-}
 
+void func(int sockfd) 
+{ 
+    char buff[MAX]; 
+    int n; 
+    for (;;) { 
+        bzero(buff, sizeof(buff)); 
+        printf("Enter the string : "); 
+        n = 0; 
+        while ((buff[n++] = getchar()) != '\n') 
+            ; 
+        write(sockfd, buff, sizeof(buff)); 
+        bzero(buff, sizeof(buff)); 
+        read(sockfd, buff, sizeof(buff)); 
+        printf("From Server : %s", buff); 
+        if ((strncmp(buff, "exit", 4)) == 0) { 
+            printf("Client Exit...\n"); 
+            break; 
+        } 
+    } 
+} 
+  
 
+int main(int argc, char* argv][]) { 
+    int sockfd, connfd; 
+    struct sockaddr_in servaddr, cli; 
 
-int main(int argc, char* argv[] ){
-	
 	char* hostname = argv[1];
-	/*
-	unsigned short port_num;
-	sscanf(argv[2], "%hi", &port_num);
-	*/
 	int port_num = atoi(argv[2]);
-	
-	//TODO connect to server here
-	
-	int sockfd = socket(AF_INET, SOCK_STREAM,0);
-	if (sockfd < 0){ //TODO Error
-		printf("error\n");
-		return 0;
-	}
-	
-	char* ip;
-	struct hostent *host = gethostbyname(hostname);
+
+    // socket create and varification 
+    sockfd = socket(AF_INET, SOCK_STREAM, 0); 
+    if (sockfd == -1) { 
+        printf("socket creation failed...\n"); 
+        exit(0); 
+    } 
+    else
+        printf("Socket successfully created..\n"); 
+    bzero(&servaddr, sizeof(servaddr)); 
+  
+  	struct hostent *host = gethostbyname(hostname);
 	
 	if (host == NULL){ //TODO error
 		printf("hostname error\n");
 		return 0;
 
 	}
-	
-	struct sockaddr_in server_addy;
-	bzero(&server_addy, sizeof(server_addy));
-	
-	
-	//bcopy((char*) host->h_addr_list[0], (char*) &server_addy.sin_addr.s_addr,host->h_length);
+    // assign IP, PORT 
+    servaddr.sin_family = AF_INET; 
 	server_addy.sin_addr = *(struct in_addr* )* host->h_addr_list;
-	server_addy.sin_family = AF_INET;
-	server_addy.sin_port = htons(port_num);
-	int status = connect(sockfd, (struct sockaddr *) &server_addy, sizeof(server_addy));
-	
-	if (status != 0){
-		printf("could not be connected :(\n");
-		return 0;
-	}
-	
-	else printf("connecting...\n");	
-				
-	/*	
-	//accpet some commands (HELLO)
-	printf("HELLO!\n");
-	int acceptCommands = 1;
-	while(acceptCommands != 0){ //while commands are getting inputted
-		char command[100];
-		scanf("%s", command);
-		if (checkCommand(command) != 1)
-			acceptCommands = 0;
-		
-		printf("command is %s\n", command);
+    servaddr.sin_port = htons(port_num); 
+  
+    // connect the client socket to server socket 
+    if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) { 
+        printf("connection with the server failed...\n"); 
+        exit(0); 
+    } 
+    else
+        printf("connected to the server..\n"); 
+  
+    // function for chat 
+    func(sockfd); 
+  
+    // close the socket 
+    close(sockfd); 
+} 
 
-	}
-	printf("exitted loop\n");	
-	*/
-	printf("do stuff here\n");
-	func(sockfd);
-
-}

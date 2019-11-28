@@ -8,68 +8,76 @@
 
 //server socket port number: random number between 4096 and 65k
 
+void func(int sockfd) 
+{ 
+    char buff[MAX]; 
+    int n; 
+    // infinite loop for chat 
+    for (;;) { 
+        bzero(buff, MAX); 
+  
+        // read the message from client and copy it in buffer 
+        read(sockfd, buff, sizeof(buff)); 
+        // print buffer which contains the client contents 
+        printf("From client: %s\t To client : ", buff); 
+        bzero(buff, MAX); 
+        n = 0; 
+        // copy server message in the buffer 
+        while ((buff[n++] = getchar()) != '\n') 
+            ; 
+  
+        // and send that buffer to client 
+        write(sockfd, buff, sizeof(buff)); 
+  
+        // if msg contains "Exit" then server exit and chat ended. 
+        if (strncmp("exit", buff, 4) == 0) { 
+            printf("Server Exit...\n"); 
+            break; 
+        } 
+    } 
+} 
 
-void func(int sockfd){
-	char buff[100];
-	int n;
-	for (;;){
-		bzero(buff,100);
-		read(sockfd,buff,sizeof(buff));
-		printf("From clien: %s\tTo client:", buff);
-		bzero(buff,100);
-		n = 0;
-		while((buff[n++] = getchar())!='\n');
-		write(sockfd,buff,sizeof(buff));
-		if (strncmp("exit",buff,4) == 0){
-			printf("server exit\n");
-			break;
-		}
-	}
-
-}
+int main(int argc, char* argv[]) { 
+    int sockfd, connfd, len; 
+    struct sockaddr_in servaddr, cli; 
 
 
-
-int main(int argc, char* argv[]){
-
-	int PORT = atoi(argv[1]);
-
-	/*unsigned short PORT; 
-	sscanf(argv[1],"hi",&PORT);
-	*/
-	int sockfd, connfd, len; 
-    struct sockaddr_in serv_addr, cli; 
+    int port_num = atoi(argv[1]);
   
     // socket create and verification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfd == -1) { 
         printf("socket creation failed...\n"); 
-        return 0; 
+        exit(0); 
     } 
     else
         printf("Socket successfully created..\n"); 
-    bzero((char*)&serv_addr, sizeof(serv_addr)); 
+    bzero(&servaddr, sizeof(servaddr)); 
   
     // assign IP, PORT 
-    serv_addr.sin_family = AF_INET; 
-    serv_addr.sin_addr.s_addr = INADDR_ANY; 
-    serv_addr.sin_port = htons(PORT); 
+    servaddr.sin_family = AF_INET; 
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); 
+    servaddr.sin_port = htons(port_num); 
   
     // Binding newly created socket to given IP and verification 
-    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) { 
+    if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) { 
         printf("socket bind failed...\n"); 
-        return 0;
+        exit(0); 
     } 
     else
         printf("Socket successfully binded..\n"); 
   
     // Now server is ready to listen and verification 
-    listen(sockfd, 5); 
-    
+    if ((listen(sockfd, 5)) != 0) { 
+        printf("Listen failed...\n"); 
+        exit(0); 
+    } 
+    else
+        printf("Server listening..\n"); 
     len = sizeof(cli); 
   
     // Accept the data packet from client and verification 
-    connfd = accept(sockfd, (struct sockaddr*)&cli, &len); 
+    connfd = accept(sockfd, (SA*)&cli, &len); 
     if (connfd < 0) { 
         printf("server acccept failed...\n"); 
         exit(0); 
@@ -77,11 +85,9 @@ int main(int argc, char* argv[]){
     else
         printf("server acccept the client...\n"); 
   
-
-
-	func(connfd);
-
-		
-
-
-}
+    // Function for chatting between client and server 
+    func(connfd); 
+  
+    // After chatting close the socket 
+    close(sockfd); 
+} 
