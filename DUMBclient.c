@@ -56,11 +56,9 @@ int main(int argc, char* argv[]) {
     // socket create and varification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfd == -1) { 
-        printf("socket creation failed...\n"); 
-        exit(0); 
+        return 0;
     } 
-    else
-        printf("Socket successfully created..\n"); 
+    
     bzero(&servaddr, sizeof(servaddr)); 
   
   	struct hostent *host = gethostbyname(hostname);
@@ -68,20 +66,19 @@ int main(int argc, char* argv[]) {
 	if (host == NULL){ //TODO error
 		printf("hostname error\n");
 		return 0;
-
 	}
     // assign IP, PORT 
     servaddr.sin_family = AF_INET; 
 	servaddr.sin_addr = *(struct in_addr* )* host->h_addr_list;
-   servaddr.sin_port = htons(port_num); 
+    servaddr.sin_port = htons(port_num); 
   
     // connect the client socket to server socket 
     if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) { 
-        printf("connection with the server failed...\n"); 
+        printf("connecting failed :(\n"); 
         exit(0); 
     } 
     else
-        printf("connected to the server..\n"); 
+        printf("connected!!!\n"); 
   
     // function for chat 
     func(sockfd); 

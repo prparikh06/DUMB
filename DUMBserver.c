@@ -38,20 +38,19 @@ void func(int sockfd)
 } 
 
 int main(int argc, char* argv[]) { 
-    int sockfd, connfd, len; 
-    struct sockaddr_in servaddr, cli; 
-
+    int sockfd, connfd; 
+    struct sockaddr_in servaddr, clientaddr; 
 
     int port_num = atoi(argv[1]);
   
     // socket create and verification 
     sockfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfd == -1) { 
-        printf("socket creation failed...\n"); 
-        exit(0); 
+       return 0; 
     } 
     else
         printf("Socket successfully created..\n"); 
+    
     bzero(&servaddr, sizeof(servaddr)); 
   
     // assign IP, PORT 
@@ -61,29 +60,28 @@ int main(int argc, char* argv[]) {
   
     // Binding newly created socket to given IP and verification 
     if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) { 
-        printf("socket bind failed...\n"); 
-        exit(0); 
+        printf("binding failed\n"); 
+        return 0; 
     } 
-    else
-        printf("Socket successfully binded..\n"); 
-  
+    
     // Now server is ready to listen and verification 
     if ((listen(sockfd, 5)) != 0) { 
-        printf("Listen failed...\n"); 
-        exit(0); 
+        printf("Listening failed...\n"); 
+        return 0;
     } 
     else
-        printf("Server listening..\n"); 
-    len = sizeof(cli); 
+        printf("Listening..\n"); 
+
+    int size = sizeof(clientaddr); 
   
     // Accept the data packet from client and verification 
-    connfd = accept(sockfd, (struct sockaddr*)&cli, &len); 
+    connfd = accept(sockfd, (struct sockaddr*)&clientaddr, &size); 
     if (connfd < 0) { 
-        printf("server acccept failed...\n"); 
-        exit(0); 
+        printf("could not accept client :(\n"); 
+        return 0;
     } 
     else
-        printf("server acccept the client...\n"); 
+        printf("accepted!!!\n"); 
   
     // Function for chatting between client and server 
     func(connfd); 
