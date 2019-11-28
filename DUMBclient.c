@@ -82,26 +82,16 @@ int main(int argc, char* argv[] ){
 		return 0;
 
 	}
-	
 	bzero(&serv_addr, sizeof(serv_addr));
-	
 	//initialize socket
 	serv_addr.sin_addr = *(struct in_addr* )* host->h_addr_list;
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(port_num);
 	
-	while(1){
-		 if (numAttempts == 3){
-			printf("3 attempts\n");
-			return 0;
-		}
-		
-		if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0){
-			printf("could not be connected :(\n");
-			numAttempts++;
-		}
-		else break; //connect successful
-
+	
+	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0){
+		printf("could not be connected :(\n");
+		return 0;
 	}
 	
 	//accpet some commands (HELLO)
