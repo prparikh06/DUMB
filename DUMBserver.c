@@ -10,17 +10,17 @@
 
 void func(int sockfd) 
 { 
-    char buff[MAX]; 
+    char buff[100]; 
     int n; 
     // infinite loop for chat 
     for (;;) { 
-        bzero(buff, MAX); 
+        bzero(buff, 100); 
   
         // read the message from client and copy it in buffer 
         read(sockfd, buff, sizeof(buff)); 
         // print buffer which contains the client contents 
         printf("From client: %s\t To client : ", buff); 
-        bzero(buff, MAX); 
+        bzero(buff, 100); 
         n = 0; 
         // copy server message in the buffer 
         while ((buff[n++] = getchar()) != '\n') 
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     servaddr.sin_port = htons(port_num); 
   
     // Binding newly created socket to given IP and verification 
-    if ((bind(sockfd, (SA*)&servaddr, sizeof(servaddr))) != 0) { 
+    if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) { 
         printf("socket bind failed...\n"); 
         exit(0); 
     } 
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
     len = sizeof(cli); 
   
     // Accept the data packet from client and verification 
-    connfd = accept(sockfd, (SA*)&cli, &len); 
+    connfd = accept(sockfd, (struct sockaddr*)&cli, &len); 
     if (connfd < 0) { 
         printf("server acccept failed...\n"); 
         exit(0); 

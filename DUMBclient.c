@@ -26,7 +26,7 @@ int checkCommand(char* str){
 
 void func(int sockfd) 
 { 
-    char buff[MAX]; 
+    char buff[100]; 
     int n; 
     for (;;) { 
         bzero(buff, sizeof(buff)); 
@@ -46,7 +46,7 @@ void func(int sockfd)
 } 
   
 
-int main(int argc, char* argv][]) { 
+int main(int argc, char* argv[]) { 
     int sockfd, connfd; 
     struct sockaddr_in servaddr, cli; 
 
@@ -72,11 +72,11 @@ int main(int argc, char* argv][]) {
 	}
     // assign IP, PORT 
     servaddr.sin_family = AF_INET; 
-	server_addy.sin_addr = *(struct in_addr* )* host->h_addr_list;
-    servaddr.sin_port = htons(port_num); 
+	servaddr.sin_addr = *(struct in_addr* )* host->h_addr_list;
+   servaddr.sin_port = htons(port_num); 
   
     // connect the client socket to server socket 
-    if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) { 
+    if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) { 
         printf("connection with the server failed...\n"); 
         exit(0); 
     } 
