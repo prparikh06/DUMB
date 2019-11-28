@@ -97,7 +97,7 @@ int main(int argc, char* argv[] ){
 	//accpet some commands (HELLO)
 	printf("HELLO!\n");
 
-	//checkCommands(sockfd);
+	checkCommands(sockfd);
 
 	close(sockfd);
 }

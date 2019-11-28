@@ -80,8 +80,7 @@ int main(int argc, char* argv[]){
         printf("connecting error\n"); 
         return 0;
     } 
-	printf("accepted connection!\n");    
-	//checkCommands(connfd);
-	close(sockfd);
+    
+	checkCommands(connfd);
 
 }
