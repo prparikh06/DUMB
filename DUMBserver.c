@@ -7,6 +7,8 @@
 #include <sys/types.h>
 
 //server socket port number: random number between 4096 and 65k
+char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", "DELBX", "CLSBX"};
+
 
 void func(int sockfd)
 {
@@ -44,6 +46,13 @@ void interpretCommands(int connfd){
 		bzero(message,sizeof(message));
 		read(connfd,message,sizeof(message));
 		printf("client sent message: %s\n", message);
+		if (strcmp(message, clientCommands[0]) == 0){
+            bzero(message,sizeof(message));
+            strcpy(message,"HELLO DUMBv0 ready!"); // AFTER RECEIVING HELLO, SIGNAL READY
+            write(connfd, message,sizeof(message));
+            printf("connected\n"); //add timestamps laterrr
+            continue;
+		}
 		if (strcmp(message, "exit") == 0) break;
 		bzero(message,sizeof(message));
 		printf("Enter a message...\n");
@@ -101,9 +110,22 @@ int main(int argc, char* argv[]) {
         printf("could not accept client :(\n");
         return 0;
     }
-    else
-        printf("accepted!!!\n");
+    /*else{
+        char response[1024];
+        bzero(response,sizeof(response));
+		read(connfd,response,sizeof(response)); // AFTER ACCEPTING CLIENT, WAIT FOR HELLO
+		if (strcmp(response, clientCommands[0]) == 0) {
+            bzero(response,sizeof(response));
+            strcpy(response,"HELLO DUMBv0 ready!"); // AFTER RECEIVING HELLO, SIGNAL READY
+            write(connfd, response,sizeof(response));
+            printf("connected\n"); //add timestamps laterrr
+		}else{
+            printf("could not accept client\n");
+            return 0;
+		}
+    }
 
+*/
 
    interpretCommands(connfd);
 

@@ -12,6 +12,8 @@
 //52613
 int numAttempts = 0;
 char* commandOptions[] = {"quit", "create", "delete", "open", "close", "next", "put"};
+char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", "DELBX", "CLSBX"};
+int connected = 0;
 
 
 int checkCommand(char* str){
@@ -51,6 +53,19 @@ void readCommands(int sockfd){
 	char message[1024];
 	for (;;){
 		bzero(message,sizeof(message));
+		if(connected == 0){
+            strcpy(message,clientCommands[0]);
+            write(sockfd, message,sizeof(message)); //UPON CONNECTION: CLIENT SENDS HELLO
+            bzero(message,sizeof(message));
+            read(sockfd,message,sizeof(message)); //AFTER RECEIVING READY FROM SERVER, CONTINUE TO RECEIVE MORE COMMANDS
+            if(strcmp(message, "HELLO DUMBv0 ready!") == 0){
+                printf("HELLO DUMBv0 ready!\n");
+                connected = 1;
+            }else{
+                printf("Connection failed\n");
+                break;
+            }
+		}
 		printf("Enter a message...\n");
 		scanf("%s", message);
 		printf("message is: %s\n", message);
@@ -92,13 +107,19 @@ int main(int argc, char* argv[]) {
 	servaddr.sin_addr = *(struct in_addr* )* host->h_addr_list;
     servaddr.sin_port = htons(port_num);
 
+    char command[100];
+    printf("Enter a message...\n");
+    scanf("%s", command);
+    if (strcmp(command,"hello") != 0){
+        printf("Goodbye\n"); //will deal with error cases laterrrr
+        exit(0);
+    }
+
     // connect the client socket to server socket
     if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
         printf("connecting failed :(\n");
         exit(0);
     }
-    else
-        printf("connected!!!\n");
 
     readCommands(sockfd);
 
