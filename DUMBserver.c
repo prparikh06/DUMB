@@ -20,9 +20,9 @@ char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", 
 
 
 int createBox(char* name){
-    box* ptr = head; 
+    box* ptr = head;
 
-    while(ptr != NULL){ //if head hasn't been initialized 
+    while(ptr != NULL){ //if head hasn't been initialized
         if(strcmp(ptr->name, name) == 0){
             return 0; //DUPLICATE
         }
@@ -38,7 +38,7 @@ int createBox(char* name){
     strcpy(newBox->name,name);
     newBox->inUse = 0;
     newBox->queue = (struct Node*) malloc(sizeof(struct Node));
-    
+
     if(head == NULL){ //box list is empty, create first one
         newBox->next = NULL;
         head = newBox;
@@ -159,14 +159,14 @@ void interpretCommands(int connfd){
 
 
 int main(int argc, char* argv[]) {
-
+/*
 	struct Node* queue = (struct Node*) malloc(sizeof(struct Node));
 	enqueue(&queue, "parikh");
 	enqueue(&queue,"priya");
 	printList(queue);
     printf("size of queue should be 2: %d\n", size);
+*/
 
-/*
     int sockfd, connfd;
     struct sockaddr_in servaddr, clientaddr;
 
@@ -208,27 +208,12 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     printf("connected\n");
-  */
-  /*else{
-        char response[1024];
-        bzero(response,sizeof(response));
-		read(connfd,response,sizeof(response)); // AFTER ACCEPTING CLIENT, WAIT FOR HELLO
-		if (strcmp(response, clientCommands[0]) == 0) {
-            bzero(response,sizeof(response));
-            strcpy(response,"HELLO DUMBv0 ready!"); // AFTER RECEIVING HELLO, SIGNAL READY
-            write(connfd, response,sizeof(response));
-            printf("connected\n"); //add timestamps laterrr
-		}else{
-            printf("could not accept client\n");
-            return 0;
-		}
-    }
 
-*/
-/*
+
+
    interpretCommands(connfd);
 
    close(sockfd);
-*/
+
 }
 
