@@ -47,6 +47,53 @@ void func(int sockfd)
     }
 }
 
+void handleOpen(int sockfd){
+    char message[1024];
+    bzero(message,sizeof(message));
+    strcpy(message,clientCommands[3]);
+    write(sockfd, message,sizeof(message)); //SEND OPENBX
+    bzero(message,sizeof(message));
+    printf("Okay, open which message box?\n");
+    printf("open:> ");
+    bzero(message,sizeof(message));
+    scanf("%s", message);
+    write(sockfd, message,sizeof(message)); //SEND box name
+    printf("opening box: %s\n", message);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    if (strcmp(message, "OK!") == 0){
+        printf("Success! Message box 'mybox' is now open.\n");
+        printf("> ");
+    }else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+}
+
+void handleCreate(int sockfd){
+    char message[1024];
+    bzero(message,sizeof(message));
+    strcpy(message,clientCommands[2]);
+    write(sockfd, message,sizeof(message)); //SEND CREATEBX
+    bzero(message,sizeof(message));
+    printf("Okay, create a box name!\n");
+    printf("create:> ");
+    bzero(message,sizeof(message));
+    scanf("%s", message);
+    char boxName[1024]; strcpy(boxName,message);
+    write(sockfd, message,sizeof(message)); //SEND box name
+    printf("creating box: %s\n", message);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    if (strcmp(message, "OK!") == 0){
+        printf("Success! Message box %s has been created.\n", boxName);
+    }else if(strcmp(message, "ER:EXIST") == 0){
+        printf("Failed! Message box %s already exists.\n", boxName);
+    }
+    else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+}
+
 
 void readCommands(int sockfd){
 
@@ -69,6 +116,39 @@ void readCommands(int sockfd){
 		printf("Enter a message...\n");
 		scanf("%s", message);
 		printf("message is: %s\n", message);
+		if (strcmp(message, "exit") == 0) break;
+
+		if (strcmp(message,"create") == 0){
+            handleCreate(sockfd);
+            continue;
+		}
+		if (strcmp(message,"delete") == 0){
+            printf("handle delete\n");
+            continue;
+		}
+		//IF COMMAND IS OPEN, FOLLOW UP
+		if (strcmp(message,"open") == 0){
+            handleOpen(sockfd);
+            continue;
+		}
+		if (strcmp(message,"close") == 0){
+            printf("handle close\n");
+            continue;
+		}
+		if (strcmp(message,"next") == 0){
+            printf("handle next\n");
+            continue;
+		}
+		if (strcmp(message,"put") == 0){
+            printf("handle put\n");
+            continue;
+		}
+		if (strcmp(message,"quit") == 0){
+            printf("handle quit\n");
+            continue;
+		}
+		bzero(message,sizeof(message));
+		scanf("%s", message);
 		write(sockfd, message,sizeof(message));
 		if (strcmp(message,"exit") == 0) break;
 		bzero(message,sizeof(message));
