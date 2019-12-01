@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include "queue.h"
 
 typedef struct node{
     char* val;
@@ -22,35 +23,6 @@ typedef struct box{
 struct box* head = NULL;
 char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", "DELBX", "CLSBX"};
 
-
-void func(int sockfd)
-{
-    char buff[100];
-    int n;
-    // infinite loop for chat
-    for (;;) {
-        bzero(buff, 100);
-
-        // read the message from client and copy it in buffer
-        read(sockfd, buff, sizeof(buff));
-        // print buffer which contains the client contents
-        printf("From client: %s\t To client : ", buff);
-        bzero(buff, 100);
-        n = 0;
-        // copy server message in the buffer
-        while ((buff[n++] = getchar()) != '\n')
-            ;
-
-        // and send that buffer to client
-        write(sockfd, buff, sizeof(buff));
-
-        // if msg contains "Exit" then server exit and chat ended.
-        if (strncmp("exit", buff, 4) == 0) {
-            printf("Server Exit...\n");
-            break;
-        }
-    }
-}
 
 int createBox(char* name){
     box* ptr = head;
@@ -193,6 +165,13 @@ void interpretCommands(int connfd){
 
 
 int main(int argc, char* argv[]) {
+/*
+	struct Node* queue = (struct Node*) malloc(sizeof(struct Node));
+	enqueue(&queue, "parikh");
+	enqueue(&queue,"priya");
+	printList(queue);
+
+*/
     int sockfd, connfd;
     struct sockaddr_in servaddr, clientaddr;
 
@@ -234,7 +213,8 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     printf("connected\n");
-    /*else{
+  
+  /*else{
         char response[1024];
         bzero(response,sizeof(response));
 		read(connfd,response,sizeof(response)); // AFTER ACCEPTING CLIENT, WAIT FOR HELLO
@@ -254,4 +234,6 @@ int main(int argc, char* argv[]) {
    interpretCommands(connfd);
 
    close(sockfd);
+
 }
+
