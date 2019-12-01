@@ -7,14 +7,9 @@
 #include <sys/types.h>
 #include "queue.h"
 
-typedef struct node{
-    char* val;
-    struct node* next;
-}node;
-
 typedef struct box{
     char* name; //NAME OF BOX
-    struct node* q; //THE QUEUE
+    struct Node* queue; //THE QUEUE
     struct box* next; //POINTER TO NEXT BOX
     int inUse; //BOX STATUS
 }box;
@@ -25,9 +20,9 @@ char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", 
 
 
 int createBox(char* name){
-    box* ptr = head;
+    box* ptr = head; 
 
-    while(ptr != NULL){
+    while(ptr != NULL){ //if head hasn't been initialized 
         if(strcmp(ptr->name, name) == 0){
             return 0; //DUPLICATE
         }
@@ -42,7 +37,8 @@ int createBox(char* name){
     newBox->name = malloc(sizeof(char)*1024);
     strcpy(newBox->name,name);
     newBox->inUse = 0;
-    newBox->q = malloc(sizeof(node));
+    newBox->queue = (struct Node*) malloc(sizeof(struct Node));
+    
     if(head == NULL){ //box list is empty, create first one
         newBox->next = NULL;
         head = newBox;
@@ -162,16 +158,15 @@ void interpretCommands(int connfd){
 }
 
 
-
-
 int main(int argc, char* argv[]) {
-/*
+
 	struct Node* queue = (struct Node*) malloc(sizeof(struct Node));
 	enqueue(&queue, "parikh");
 	enqueue(&queue,"priya");
 	printList(queue);
+    printf("size of queue should be 2: %d\n", size);
 
-*/
+/*
     int sockfd, connfd;
     struct sockaddr_in servaddr, clientaddr;
 
@@ -213,7 +208,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     printf("connected\n");
-  
+  */
   /*else{
         char response[1024];
         bzero(response,sizeof(response));
@@ -230,10 +225,10 @@ int main(int argc, char* argv[]) {
     }
 
 */
-
+/*
    interpretCommands(connfd);
 
    close(sockfd);
-
+*/
 }
 
