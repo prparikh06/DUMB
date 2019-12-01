@@ -5,15 +5,11 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-
-typedef struct node{
-    char* val;
-    struct node* next;
-}node;
+#include "queue.h"
 
 typedef struct box{
     char* name; //NAME OF BOX
-    struct node* q; //THE QUEUE
+    struct Node* queue; //THE QUEUE
     struct box* next; //POINTER TO NEXT BOX
     int inUse; //BOX STATUS
 }box;
@@ -23,39 +19,10 @@ struct box* head = NULL;
 char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", "DELBX", "CLSBX"};
 
 
-void func(int sockfd)
-{
-    char buff[100];
-    int n;
-    // infinite loop for chat
-    for (;;) {
-        bzero(buff, 100);
-
-        // read the message from client and copy it in buffer
-        read(sockfd, buff, sizeof(buff));
-        // print buffer which contains the client contents
-        printf("From client: %s\t To client : ", buff);
-        bzero(buff, 100);
-        n = 0;
-        // copy server message in the buffer
-        while ((buff[n++] = getchar()) != '\n')
-            ;
-
-        // and send that buffer to client
-        write(sockfd, buff, sizeof(buff));
-
-        // if msg contains "Exit" then server exit and chat ended.
-        if (strncmp("exit", buff, 4) == 0) {
-            printf("Server Exit...\n");
-            break;
-        }
-    }
-}
-
 int createBox(char* name){
-    box* ptr = head;
+    box* ptr = head; 
 
-    while(ptr != NULL){
+    while(ptr != NULL){ //if head hasn't been initialized 
         if(strcmp(ptr->name, name) == 0){
             return 0; //DUPLICATE
         }
@@ -70,7 +37,8 @@ int createBox(char* name){
     newBox->name = malloc(sizeof(char)*1024);
     strcpy(newBox->name,name);
     newBox->inUse = 0;
-    newBox->q = malloc(sizeof(node));
+    newBox->queue = (struct Node*) malloc(sizeof(struct Node));
+    
     if(head == NULL){ //box list is empty, create first one
         newBox->next = NULL;
         head = newBox;
@@ -190,9 +158,15 @@ void interpretCommands(int connfd){
 }
 
 
-
-
 int main(int argc, char* argv[]) {
+
+	struct Node* queue = (struct Node*) malloc(sizeof(struct Node));
+	enqueue(&queue, "parikh");
+	enqueue(&queue,"priya");
+	printList(queue);
+    printf("size of queue should be 2: %d\n", size);
+
+/*
     int sockfd, connfd;
     struct sockaddr_in servaddr, clientaddr;
 
@@ -234,7 +208,8 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     printf("connected\n");
-    /*else{
+  */
+  /*else{
         char response[1024];
         bzero(response,sizeof(response));
 		read(connfd,response,sizeof(response)); // AFTER ACCEPTING CLIENT, WAIT FOR HELLO
@@ -250,8 +225,10 @@ int main(int argc, char* argv[]) {
     }
 
 */
-
+/*
    interpretCommands(connfd);
 
    close(sockfd);
+*/
 }
+
