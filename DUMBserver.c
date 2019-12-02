@@ -37,7 +37,8 @@ int createBox(char* name){
     newBox->name = malloc(sizeof(char)*1024);
     strcpy(newBox->name,name);
     newBox->inUse = 0;
-    newBox->queue = (struct Node*) malloc(sizeof(struct Node));
+    struct Node* qHead = (struct Node*) malloc(sizeof(struct Node));
+    newBox->queue = qHead;
 
     if(head == NULL){ //box list is empty, create first one
         newBox->next = NULL;
@@ -89,6 +90,21 @@ int closeBox(char* name, char* target){
 }
 
 int putMessage(char* name, char* msg){
+    printf("my message: %s\n", msg);
+    box* ptr = head;
+
+    while(ptr != NULL){
+        if(strcmp(ptr->name, name) == 0){
+            break;//FOUND BOX
+        }
+        ptr = ptr->next;
+    }
+    if(ptr->inUse == 0) return 0;
+    //struct Node** q = malloc(sizeof(struct Node*)); *q = ptr->queue;
+    enqueue(ptr->queue, msg);
+    printf("in my box: %s\n", ptr->queue->data);
+    return 1;
+
 }
 
 int convertNum(char* num){
@@ -132,7 +148,7 @@ int openCommands(char* name, int connfd){
             if(status == 1) return 1; //SUCCESSFULLY CLOSED BOX
             continue;
         }
-        if (strcmp(message, clientCommands[5]) == 0){
+        if (strcmp(message, clientCommands[5]) == 0){ //RECEIVED PUTMG
             printf("time to put a msg!!\n");
             bzero(message,sizeof(message));
             read(connfd,message,sizeof(message)); //WAIT FOR MSG
@@ -146,7 +162,7 @@ int openCommands(char* name, int connfd){
             int len = strlen(numBytes); //index where actual msg starts
             len = 6 + len + 1;
             strcpy(msg,message+len);
-            int status = 1; //putmessage
+            int status = putMessage(name, msg); //putmessage
             bzero(message,sizeof(message));
             if(status == 0){
                 strcpy(message,"ER:NOOPN");

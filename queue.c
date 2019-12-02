@@ -14,10 +14,10 @@ struct Node{
 //enqueue: add to end of LL
 void enqueue(struct Node** front, char* message){
 	struct Node* new = (struct Node*) malloc(sizeof(struct Node));
-	new->data = malloc(sizeof(message));
+	new->data = malloc(strlen(message)+1);
 	new->next = NULL;
-	strcpy(new->data, message); 
-	
+	strcpy(new->data, message);
+
 	if (size == 0){ //no nodes added
 		*front = new;
 		size++;
@@ -45,7 +45,7 @@ int getSize(){
 }
 
 void printList(struct Node* front){
-	
+
 	for(struct Node* ptr = front; ptr != NULL; ptr = ptr->next) printf("%s\t", ptr->data);
 	printf("\n");
 
