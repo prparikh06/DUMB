@@ -70,6 +70,40 @@ int openBox(char* name){
 
 }
 
+int closeBox(char* name, char* target){
+    if(strcmp(name,target) != 0){ //Current open box does not match closebox arg
+        return 0;
+    }
+    box* ptr = head;
+
+    while(ptr != NULL){
+        if(strcmp(ptr->name, target) == 0){
+            break;//FOUND BOX
+        }
+        ptr = ptr->next;
+    }
+
+    ptr->inUse = 0;
+    return 1;
+
+}
+
+int putMessage(char* name, char* msg){
+}
+
+int convertNum(char* num){
+    char c;
+    int i, digit, number = 0;
+    for(i=0; i<strlen(num);i++){
+        c = num[i];
+        if(c>= '0' && c<= '9'){
+            digit = c - '0';
+            number = number * 10 + digit;
+        }
+    }
+    return number;
+}
+
 int openCommands(char* name, int connfd){
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
 
@@ -79,6 +113,51 @@ int openCommands(char* name, int connfd){
         read(connfd,message,sizeof(message));
         printf("client sent message: %s\n", message);
         if (strcmp(message, "exit") == 0) break;
+        if (strcmp(message, clientCommands[7]) == 0){
+            printf("time to close!!\n");
+            bzero(message,sizeof(message));
+            read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
+            printf("Close box %s\n", message);
+            char boxName[1024]; strcpy(boxName,message);
+            int status = closeBox(name, boxName);
+            bzero(message,sizeof(message));
+            if(status == 0){
+                strcpy(message,"ER:NOOPN");
+            }else{
+                strcpy(message,"OK!");
+            }
+            printf("CLSBX %s\n", boxName);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            if(status == 1) return 1; //SUCCESSFULLY CLOSED BOX
+            continue;
+        }
+        if (strcmp(message, clientCommands[5]) == 0){
+            printf("time to put a msg!!\n");
+            bzero(message,sizeof(message));
+            read(connfd,message,sizeof(message)); //WAIT FOR MSG
+            printf("The message: %s\n", message);
+            char msg[1024]; bzero(msg,sizeof(msg));
+            //get the actual message
+            char* numBytes = strtok(message, "!");
+            numBytes = strtok(NULL, "!");
+            int bytes = convertNum(numBytes);
+
+            int len = strlen(numBytes); //index where actual msg starts
+            len = 6 + len + 1;
+            strcpy(msg,message+len);
+            int status = 1; //putmessage
+            bzero(message,sizeof(message));
+            if(status == 0){
+                strcpy(message,"ER:NOOPN");
+            }else{
+                sprintf(message, "OK!%d", bytes);
+            }
+            printf("PUTMG!%d!%s\n", bytes, msg);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            continue;
+        }
 
         bzero(message,sizeof(message));
         printf("Enter a message...\n");
@@ -119,8 +198,10 @@ void interpretCommands(int connfd){
             printf("OPNBX %s\n", boxName);
             printf("%s\n", message);
             write(connfd, message,sizeof(message));
-            //TODO: OPEN BOX AND RETURN STATUS
-            status = openCommands(boxName, connfd);
+            //TODO: Listen for openned box commands
+            if(status == 1){
+                status = openCommands(boxName, connfd);
+            }
             continue;
 		}
 		if (strcmp(message, clientCommands[2]) == 0){ //CREAT FROM CLIENT

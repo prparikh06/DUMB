@@ -74,6 +74,64 @@ void handleCreate(int sockfd){
     }
 }
 
+void handleClose(int sockfd){
+    char message[1024];
+    bzero(message,sizeof(message));
+    strcpy(message,clientCommands[7]);
+    write(sockfd, message,sizeof(message)); //SEND CLSBX
+    bzero(message,sizeof(message));
+    printf("Okay, close which box?\n");
+    printf("close:> ");
+    bzero(message,sizeof(message));
+    scanf("%s", message);
+    char boxName[1024]; strcpy(boxName,message);
+    write(sockfd, message,sizeof(message)); //SEND box name
+    printf("closing box: %s\n", message);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    if (strcmp(message, "OK!") == 0){
+        printf("Success! Message box %s has been closed.\n", boxName);
+    }else if(strcmp(message, "ER:NOOPN") == 0){
+        printf("Failed! You do not currently have the box opened, so you can't close it.\n", boxName);
+    }
+    else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+}
+
+void handlePut(int sockfd){
+    char message[1024];
+    bzero(message,sizeof(message));
+    strcpy(message,clientCommands[5]);
+    write(sockfd, message,sizeof(message)); //SEND PUTMG
+    bzero(message,sizeof(message));
+    char msg[1024];
+    bzero(msg,sizeof(msg));
+    printf("Okay, enter your message:\n");
+    printf("put:> ");
+    scanf("%s", msg);
+    int numBytes = strlen(msg)+1;
+    printf("num of bytes: %d\n", numBytes);
+    //strcpy(message, "PUTMG!"); strcat(message, itoa(numBytes)); strcat(message, "!"); strcat(message, msg);
+    sprintf(message, "PUTMG!%d!%s", numBytes, msg);
+    //*message = clientCommands[5]; message[5] = '!'; message[6] = (char)numBytes; message[7] = '!'; message[8] = msg;
+    printf("message: %s\n", message);
+    write(sockfd, message,sizeof(message)); //SEND MSG
+    char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
+    printf("expecting: %s\n", weWant);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    if (strcmp(message, weWant) == 0){
+        printf("Success! Message has been put.\n");
+    }else if(strcmp(message, "ER:NOOPN") == 0){
+        printf("Failed! You do not currently have the box opened, so you can't close it.\n");
+    }
+    else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+
+}
+
 
 void readCommands(int sockfd){
 
@@ -112,7 +170,7 @@ void readCommands(int sockfd){
             continue;
 		}
 		if (strcmp(message,"close") == 0){
-            printf("handle close\n");
+            handleClose(sockfd);
             continue;
 		}
 		if (strcmp(message,"next") == 0){
@@ -120,7 +178,7 @@ void readCommands(int sockfd){
             continue;
 		}
 		if (strcmp(message,"put") == 0){
-            printf("handle put\n");
+            handlePut(sockfd);
             continue;
 		}
 		if (strcmp(message,"quit") == 0){
