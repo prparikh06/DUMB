@@ -13,7 +13,7 @@ struct Node{
 };
 
 void enqueue(struct Node** front, char* message);
-void dequeue(struct Node** front);
+char* dequeue(struct Node** front);
 int getSize();
 void printList(struct Node* front);
 

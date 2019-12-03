@@ -110,7 +110,7 @@ int putMessage(char* name, char* msg){
 
 char* getNextMsg(char* name){
     box* ptr = head;
-
+	
     while(ptr != NULL){
         if(strcmp(ptr->name, name) == 0){
             break;//FOUND BOX
@@ -119,10 +119,10 @@ char* getNextMsg(char* name){
     }
     if(ptr->inUse == 0) return 0;
     struct Node* q = ptr->queue;
-    //struct Node* target = dequeue(&q);
-    char* msg; // = target->data;
+    char* msg  = dequeue(&q);
+    //char* msg = target->data;
     //free(target);
-    //printf("message is %s\n", msg);
+    printf("message is %s\n", msg);
     return msg;
 
 }
@@ -195,7 +195,7 @@ int openCommands(char* name, int connfd){
             continue;
         }
         if (strcmp(message, clientCommands[4]) == 0){
-            char* msg; //getNextMsg(name)
+            char* msg = getNextMsg(name);
             bzero(message,sizeof(message));
             strcpy(message,"OK!"); //SENDING AN OK FOR NOW, HAVE TO ACTUALLY GET THE MSG AND SEND IT
             printf("%s\n", message);
