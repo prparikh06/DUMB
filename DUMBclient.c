@@ -132,6 +132,24 @@ void handlePut(int sockfd){
 
 }
 
+void handleNext(int sockfd){
+    char message[1024];
+    bzero(message,sizeof(message));
+    strcpy(message,clientCommands[4]);
+    write(sockfd, message,sizeof(message)); //SEND NXTMG
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
+    if (strcmp(message, "OK!") == 0){
+        printf("Success! Message received?.\n");
+    }else if(strcmp(message, "ER:NOOPN") == 0){
+        printf("Failed! You do not currently have the box opened, so you can't close it.\n");
+    }
+    else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+
+}
+
 
 void readCommands(int sockfd){
 

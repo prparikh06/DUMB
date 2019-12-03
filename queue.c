@@ -30,14 +30,14 @@ void enqueue(struct Node** front, char* message){
 	return;
 }
 //dequeue: remove from front of LL
-void dequeue(struct Node** front){
+struct Node* dequeue(struct Node** front){
 	if (size == 0) //nothing to dequeue
-		return;
+		return NULL;
 	struct Node* ptr = *front;
 	*front = ptr->next;
-	free(ptr);
+	//free(ptr);
 	size--;
-	return;
+	return ptr;
 }
 
 int getSize(){

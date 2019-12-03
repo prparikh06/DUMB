@@ -100,10 +100,30 @@ int putMessage(char* name, char* msg){
         ptr = ptr->next;
     }
     if(ptr->inUse == 0) return 0;
-    //struct Node** q = malloc(sizeof(struct Node*)); *q = ptr->queue;
-    enqueue(ptr->queue, msg);
-    printf("in my box: %s\n", ptr->queue->data);
+    struct Node* q = ptr->queue;
+    enqueue(&q, msg);
+    printList(q);
+    printf("in my box: %s\n", q->data);
     return 1;
+
+}
+
+char* getNextMsg(char* name){
+    box* ptr = head;
+
+    while(ptr != NULL){
+        if(strcmp(ptr->name, name) == 0){
+            break;//FOUND BOX
+        }
+        ptr = ptr->next;
+    }
+    if(ptr->inUse == 0) return 0;
+    struct Node* q = ptr->queue;
+    //struct Node* target = dequeue(&q);
+    char* msg; // = target->data;
+    //free(target);
+    //printf("message is %s\n", msg);
+    return msg;
 
 }
 
@@ -170,6 +190,14 @@ int openCommands(char* name, int connfd){
                 sprintf(message, "OK!%d", bytes);
             }
             printf("PUTMG!%d!%s\n", bytes, msg);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            continue;
+        }
+        if (strcmp(message, clientCommands[4]) == 0){
+            char* msg; //getNextMsg(name)
+            bzero(message,sizeof(message));
+            strcpy(message,"OK!"); //SENDING AN OK FOR NOW, HAVE TO ACTUALLY GET THE MSG AND SEND IT
             printf("%s\n", message);
             write(connfd, message,sizeof(message));
             continue;
