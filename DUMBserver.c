@@ -16,7 +16,7 @@ typedef struct box{
 
 //server socket port number: random number between 4096 and 65k
 struct box* head = NULL;
-char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", "DELBX", "CLSBX"};
+char* clientCommands[] = {"HELLO", "GDBYE", "CREAT ", "OPNBX ", "NXTMG", "PUTMG!", "DELBX ", "CLSBX "};
 
 
 int createBox(char* name){
@@ -40,13 +40,9 @@ int createBox(char* name){
     struct Node* qHead = (struct Node*) malloc(sizeof(struct Node));
     newBox->queue = qHead;
 
-    if(head == NULL){ //box list is empty, create first one
-        newBox->next = NULL;
-        head = newBox;
-    }else{
-        newBox->next = head;
-        head = newBox;
-    }
+    newBox->next = head;
+    head = newBox;
+    printBox();
     return 1;
 }
 
@@ -68,6 +64,55 @@ int openBox(char* name){
     ptr->inUse = 1;
     return 1;
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
+
+}
+void printBox(){
+    box* ptr = head;
+
+    while(ptr != NULL){
+        printf("%s\t", ptr->name);
+        ptr = ptr->next;
+    }
+    printf("\n");
+}
+int deleteBox(char* name){
+    box* ptr = head;
+    box* prev = head;
+    int found = 0;
+    printBox();
+    while(ptr != NULL){
+        printf("currbox name: %s, newname: %s\n", ptr->name, name);
+        if(strcmp(ptr->name, name) == 0){
+            found = 1;
+            break;//FOUND BOX
+        }
+        prev = ptr;
+        ptr = ptr->next;
+    }
+    if(found == 0){
+        return 0; //box doesn't exist
+    }
+    if(ptr->inUse == 1) return -1; //CURRENTLY OPEN, CANNOT DELETE
+    if(ptr->queue->data != NULL) return -2; //BOX NOT EMPTY, CANNOT DELETE
+
+    printf("head is:%s\n", head->name);
+    printf("prev is:%s\n", prev->name);
+
+    if(ptr == prev) head = ptr->next; //its the first element
+    //else if(prev == head) head = prev->next;
+    else prev->next = ptr->next;
+    if(head != NULL){
+        printf("head isnow :%s\n", head->name);
+    }
+
+
+
+    free(ptr->name);
+    free(ptr->queue);
+    free(ptr);
+    printBox();
+    return 1;
+
 
 }
 
@@ -100,29 +145,32 @@ int putMessage(char* name, char* msg){
         ptr = ptr->next;
     }
     if(ptr->inUse == 0) return 0;
-    struct Node* q = ptr->queue;
-    enqueue(&q, msg);
-    printList(q);
-    printf("in my box: %s\n", q->data);
+    //struct Node* q = ptr->queue;
+    enqueue(&ptr->queue, msg);
+    printList(ptr->queue);
+    printf("in my box: %s\n", ptr->queue->data);
     return 1;
 
 }
 
 char* getNextMsg(char* name){
     box* ptr = head;
-	
+
     while(ptr != NULL){
         if(strcmp(ptr->name, name) == 0){
             break;//FOUND BOX
         }
         ptr = ptr->next;
     }
-    if(ptr->inUse == 0) return 0;
-    struct Node* q = ptr->queue;
-    char* msg  = dequeue(&q);
-    //char* msg = target->data;
-    //free(target);
+    if(ptr->inUse == 0) return "ER:NOOPN";
+    //struct Node* q = ptr->queue;
+    if(ptr->queue == NULL){
+        return "ER:EMPTY"; //List is emptyyy
+    }
+
+    char* msg  = dequeue(&ptr->queue);
     printf("message is %s\n", msg);
+
     return msg;
 
 }
@@ -149,12 +197,20 @@ int openCommands(char* name, int connfd){
         read(connfd,message,sizeof(message));
         printf("client sent message: %s\n", message);
         if (strcmp(message, "exit") == 0) break;
-        if (strcmp(message, clientCommands[7]) == 0){
+        if (strcmp(message, clientCommands[1]) == 0){ // GDBYE FROM CLIENT
+            int status = closeBox(name, name);
+            if(status == 1){
+                printf("box closed\n");
+            }
+            return 0; //RETURNING 0 TO INDICATE CLOSE CONNECTION
+        }
+        if (strncmp(message, clientCommands[7], 6) == 0){ //CLSBX FROM CLIENT
             printf("time to close!!\n");
-            bzero(message,sizeof(message));
-            read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
-            printf("Close box %s\n", message);
-            char boxName[1024]; strcpy(boxName,message);
+            //bzero(message,sizeof(message));
+            //read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
+            char boxName[1024]; strcpy(boxName,message+6);
+
+            printf("Close box %s\n", boxName);
             int status = closeBox(name, boxName);
             bzero(message,sizeof(message));
             if(status == 0){
@@ -168,10 +224,10 @@ int openCommands(char* name, int connfd){
             if(status == 1) return 1; //SUCCESSFULLY CLOSED BOX
             continue;
         }
-        if (strcmp(message, clientCommands[5]) == 0){ //RECEIVED PUTMG
+        if (strncmp(message, clientCommands[5], 6) == 0){ //RECEIVED PUTMG
             printf("time to put a msg!!\n");
-            bzero(message,sizeof(message));
-            read(connfd,message,sizeof(message)); //WAIT FOR MSG
+            //bzero(message,sizeof(message));
+            //read(connfd,message,sizeof(message)); //WAIT FOR MSG
             printf("The message: %s\n", message);
             char msg[1024]; bzero(msg,sizeof(msg));
             //get the actual message
@@ -194,11 +250,33 @@ int openCommands(char* name, int connfd){
             write(connfd, message,sizeof(message));
             continue;
         }
-        if (strcmp(message, clientCommands[4]) == 0){
-            char* msg = getNextMsg(name);
+        if (strcmp(message, clientCommands[4]) == 0){ //NXTMG
             bzero(message,sizeof(message));
-            strcpy(message,"OK!"); //SENDING AN OK FOR NOW, HAVE TO ACTUALLY GET THE MSG AND SEND IT
+            char* msg = getNextMsg(name);
+            printf("nextmesg returned %s\n", msg);
+            int len = strlen(msg)+1;
+            char* nextMsg = malloc(len);
+            nextMsg = msg;
+
+            if(strcmp(nextMsg, "ER:EMPTY") == 0){
+                strcpy(message, "ER:EMPTY");
+            }
+            else if(strcmp(nextMsg, "ER:NOOPN") == 0){
+                strcpy(message, "ER:EMPTY");
+            }
+            else{
+                int bytes = strlen(msg)+1;
+                sprintf(message,"OK!%d!%s", bytes, msg);
+            }
+
             printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            continue;
+        }
+        if (strncmp(message, clientCommands[6], 6) == 0){ //DELETEBX
+            bzero(message,sizeof(message));
+            strcpy(message, "ER:OPEND");    //CANNOT DELETE OPENED BOX
+            printf("message is: %s\n", message);
             write(connfd, message,sizeof(message));
             continue;
         }
@@ -226,12 +304,14 @@ void interpretCommands(int connfd){
             printf("HELLO\n"); //add timestamps laterrr
             continue;
 		}
-		if (strcmp(message, clientCommands[3]) == 0){ //OPNBX FROM CLIENT
+		if (strcmp(message, clientCommands[1]) == 0) break;
+		if (strncmp(message, clientCommands[3], 6) == 0){ //OPNBX FROM CLIENT
             printf("time to open!!\n");
-            bzero(message,sizeof(message));
-            read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
-            printf("Open box %s\n", message);
-            char boxName[1024]; strcpy(boxName,message);
+            //bzero(message,sizeof(message));
+            //read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
+            char boxName[1024]; strcpy(boxName,message+6);
+            printf("Open box %s\n", boxName);
+
             int status = openBox(boxName);
             bzero(message,sizeof(message));
             if(status == 0){
@@ -245,16 +325,20 @@ void interpretCommands(int connfd){
             //TODO: Listen for openned box commands
             if(status == 1){
                 status = openCommands(boxName, connfd);
-            }
+                if(status == 0){ //CLIENT CLOSED CONNECTION
+                    break;
+                }
+            }// OTHERWISE, BOX CLOSED, CONTINUE LISTENING
             continue;
 		}
-		if (strcmp(message, clientCommands[2]) == 0){ //CREAT FROM CLIENT
+		if (strncmp(message, clientCommands[2], 6) == 0){ //CREAT FROM CLIENT
             printf("time to create!!\n");
-            bzero(message,sizeof(message));
-            read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
-            printf("Create box %s\n", message);
+            //bzero(message,sizeof(message));
+            //read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
+            char boxName[1024]; strcpy(boxName,message+6);
+            printf("Create box %s\n", boxName);
             //CREATE BOX AND RETURN STATUS
-            char boxName[1024]; strcpy(boxName,message);
+
             // TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
             int status = createBox(boxName);
             bzero(message,sizeof(message));
@@ -268,6 +352,31 @@ void interpretCommands(int connfd){
             write(connfd, message,sizeof(message));
 
             continue;
+		}
+		if (strncmp(message, clientCommands[6], 6) == 0){ //DELETEBX
+            printf("time to DELETE!!\n");
+            //bzero(message,sizeof(message));
+            //read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
+            char boxName[1024]; strcpy(boxName,message+6);
+            printf("Delete box %s\n", boxName);
+
+            int status = deleteBox(boxName);
+            bzero(message,sizeof(message));
+            if(status == 0){
+                strcpy(message,"ER:NEXST");
+            }else if(status == -1){
+                strcpy(message,"ER:OPEND");
+            }else if(status == -2){
+                strcpy(message,"ER:NOTMT");
+            }else{
+                strcpy(message,"OK!");
+            }
+            printf("DELBX %s\n", boxName);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+
+            continue;
+
 		}
 		if (strcmp(message, "exit") == 0) break;
 		bzero(message,sizeof(message));
@@ -337,6 +446,8 @@ int main(int argc, char* argv[]) {
 
 
    interpretCommands(connfd);
+
+   //join threads here
 
    close(sockfd);
 

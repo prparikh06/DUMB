@@ -30,20 +30,25 @@ int checkCommand(char* str){
 void handleOpen(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
-    strcpy(message,clientCommands[3]);
-    write(sockfd, message,sizeof(message)); //SEND OPENBX
-    bzero(message,sizeof(message));
+    //strcpy(message,clientCommands[3]);
+    //write(sockfd, message,sizeof(message)); //SEND OPENBX
+    //bzero(message,sizeof(message));
     printf("Okay, open which message box?\n");
     printf("open:> ");
-    bzero(message,sizeof(message));
+    //bzero(message,sizeof(message));
     scanf("%s", message);
+    char boxName[1024]; strcpy(boxName,message);
+    bzero(message,sizeof(message));
+    sprintf(message, "OPNBX %s", boxName);
+    printf("message sending: %s\n", message);
+
     write(sockfd, message,sizeof(message)); //SEND box name
-    printf("opening box: %s\n", message);
+    printf("opening box: %s\n", boxName);
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, "OK!") == 0){
-        printf("Success! Message box 'mybox' is now open.\n");
-        printf("> ");
+        printf("Success! Message box '%s' is now open.\n", boxName);
+        //printf("> ");
     }else{
         printf("Error. Command was unsuccessful, please try again.\n");
     }
@@ -52,16 +57,21 @@ void handleOpen(int sockfd){
 void handleCreate(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
-    strcpy(message,clientCommands[2]);
-    write(sockfd, message,sizeof(message)); //SEND CREATEBX
-    bzero(message,sizeof(message));
+    //strcpy(message,clientCommands[2]);
+    //write(sockfd, message,sizeof(message)); //SEND CREATEBX
+    //bzero(message,sizeof(message));
     printf("Okay, create a box name!\n");
     printf("create:> ");
-    bzero(message,sizeof(message));
+    //bzero(message,sizeof(message));
     scanf("%s", message);
     char boxName[1024]; strcpy(boxName,message);
+    //int boxLen = strlen(boxName)+1;
+    bzero(message,sizeof(message));
+    sprintf(message, "CREAT %s", boxName);
+    printf("message sending: %s\n", message);
+
     write(sockfd, message,sizeof(message)); //SEND box name
-    printf("creating box: %s\n", message);
+    printf("creating box: %s\n", boxName);
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, "OK!") == 0){
@@ -77,16 +87,20 @@ void handleCreate(int sockfd){
 void handleClose(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
-    strcpy(message,clientCommands[7]);
-    write(sockfd, message,sizeof(message)); //SEND CLSBX
-    bzero(message,sizeof(message));
+    //strcpy(message,clientCommands[7]);
+    //write(sockfd, message,sizeof(message)); //SEND CLSBX
+    //bzero(message,sizeof(message));
     printf("Okay, close which box?\n");
     printf("close:> ");
-    bzero(message,sizeof(message));
+    //bzero(message,sizeof(message));
     scanf("%s", message);
     char boxName[1024]; strcpy(boxName,message);
+    bzero(message,sizeof(message));
+    sprintf(message, "CLSBX %s", boxName);
+    printf("message sending: %s\n", message);
+
     write(sockfd, message,sizeof(message)); //SEND box name
-    printf("closing box: %s\n", message);
+    printf("closing box: %s\n", boxName);
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, "OK!") == 0){
@@ -102,11 +116,11 @@ void handleClose(int sockfd){
 void handlePut(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
-    strcpy(message,clientCommands[5]);
-    write(sockfd, message,sizeof(message)); //SEND PUTMG
-    bzero(message,sizeof(message));
+    //strcpy(message,clientCommands[5]);
+    //write(sockfd, message,sizeof(message)); //SEND PUTMG
+    //bzero(message,sizeof(message));
     char msg[1024];
-    bzero(msg,sizeof(msg));
+    //bzero(msg,sizeof(msg));
     printf("Okay, enter your message:\n");
     printf("put:> ");
     scanf("%s", msg);
@@ -139,8 +153,8 @@ void handleNext(int sockfd){
     write(sockfd, message,sizeof(message)); //SEND NXTMG
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
-    if (strcmp(message, "OK!") == 0){
-        printf("Success! Message received?.\n");
+    if (strncmp(message, "OK!", 3) == 0){
+        printf("Success! Message received: %s\n", message);
     }else if(strcmp(message, "ER:NOOPN") == 0){
         printf("Failed! You do not currently have the box opened, so you can't close it.\n");
     }
@@ -148,6 +162,45 @@ void handleNext(int sockfd){
         printf("Error. Command was unsuccessful, please try again.\n");
     }
 
+}
+
+void handleDelete(int sockfd){
+    char message[1024];
+    bzero(message,sizeof(message));
+    printf("Okay, delete which box?\n");
+    printf("delete:> ");
+    //bzero(message,sizeof(message));
+    scanf("%s", message);
+    char boxName[1024]; strcpy(boxName,message);
+    bzero(message,sizeof(message));
+    sprintf(message, "DELBX %s", boxName);
+    printf("message sending: %s\n", message);
+
+    write(sockfd, message,sizeof(message)); //SEND box name
+    printf("deleting box: %s\n", boxName);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    if (strcmp(message, "OK!") == 0){
+        printf("Success! Message box %s has been deleted.\n", boxName);
+    }else if(strcmp(message, "ER:NEXST") == 0){
+        printf("Failed! Box %s does not exist.\n", boxName);
+    }else if(strcmp(message, "ER:OPEND") == 0){
+        printf("Failed! Box %s is currently open.\n", boxName);
+    }else if(strcmp(message, "ER:NOTMT") == 0){
+        printf("Failed! Box %s is not empty.\n", boxName);
+    }
+    else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+}
+
+void handleQuit(int sockfd){
+    char message[1024];
+    bzero(message,sizeof(message));
+    strcpy(message,clientCommands[1]);
+    write(sockfd, message,sizeof(message)); //SEND GDBYE
+    //bzero(message,sizeof(message));
+    //read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
 }
 
 
@@ -169,17 +222,20 @@ void readCommands(int sockfd){
                 break;
             }
 		}
-		printf("Enter a message...\n");
+		printf("> ");
+		bzero(message,sizeof(message));
 		scanf("%s", message);
 		printf("message is: %s\n", message);
-		if (strcmp(message, "exit") == 0) break;
-
+		if (strcmp(message, "quit") == 0){
+            handleQuit(sockfd);
+            break;
+		}
 		if (strcmp(message,"create") == 0){
             handleCreate(sockfd);
             continue;
 		}
 		if (strcmp(message,"delete") == 0){
-            printf("handle delete\n");
+            handleDelete(sockfd);
             continue;
 		}
 		//IF COMMAND IS OPEN, FOLLOW UP
@@ -192,17 +248,18 @@ void readCommands(int sockfd){
             continue;
 		}
 		if (strcmp(message,"next") == 0){
-            printf("handle next\n");
+            handleNext(sockfd);
             continue;
 		}
 		if (strcmp(message,"put") == 0){
             handlePut(sockfd);
             continue;
 		}
-		if (strcmp(message,"quit") == 0){
-            printf("handle quit\n");
+		if (strcmp(message,"help") == 0){
+            printf("Available commands:\nquit\ncreate\ndelete\nopen\nclose\nnext\nput\n");
             continue;
 		}
+		printf("This is not a valid command. Try again!\n"); continue;
 		bzero(message,sizeof(message));
 		scanf("%s", message);
 		write(sockfd, message,sizeof(message));
@@ -242,7 +299,7 @@ int main(int argc, char* argv[]) {
     servaddr.sin_family = AF_INET;
 	servaddr.sin_addr = *(struct in_addr* )* host->h_addr_list;
     servaddr.sin_port = htons(port_num);
-
+/*
     char command[100];
     printf("Enter a message...\n");
     scanf("%s", command);
@@ -250,7 +307,7 @@ int main(int argc, char* argv[]) {
         printf("Goodbye\n"); //will deal with error cases laterrrr
         exit(0);
     }
-
+*/
     // connect the client socket to server socket
     if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
         printf("connecting failed :(\n");
