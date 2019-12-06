@@ -280,6 +280,40 @@ int openCommands(char* name, int connfd){
             write(connfd, message,sizeof(message));
             continue;
         }
+        if (strncmp(message, clientCommands[2], 6) == 0){ //CREAT FROM CLIENT
+            printf("time to create!!\n");
+            //bzero(message,sizeof(message));
+            //read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
+            char boxName[1024]; strcpy(boxName,message+6);
+            printf("Create box %s\n", boxName);
+            //CREATE BOX AND RETURN STATUS
+
+            // TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
+            int status = createBox(boxName);
+            bzero(message,sizeof(message));
+            if(status == 0){
+                strcpy(message,"ER:EXIST");
+            }else{
+                strcpy(message,"OK!");
+            }
+            printf("CREAT %s\n", boxName);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+
+            continue;
+		}
+		if (strncmp(message, clientCommands[3], 6) == 0){ //OPNBX FROM CLIENT
+            printf("time to open!!\n");
+            //bzero(message,sizeof(message));
+            //read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
+            char boxName[1024]; strcpy(boxName,message+6);
+            printf("Open box %s\n", boxName);
+            strcpy(message,"ER:WHAT?");
+            printf("OPNBX %s\n", boxName);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            continue;
+        }
 
         bzero(message,sizeof(message));
         printf("Enter a message...\n");
@@ -304,7 +338,7 @@ void interpretCommands(int connfd){
             printf("HELLO\n"); //add timestamps laterrr
             continue;
 		}
-		if (strcmp(message, clientCommands[1]) == 0) break;
+		if (strcmp(message, clientCommands[1]) == 0) break; ///TODO: more to do for quit
 		if (strncmp(message, clientCommands[3], 6) == 0){ //OPNBX FROM CLIENT
             printf("time to open!!\n");
             //bzero(message,sizeof(message));
@@ -377,6 +411,33 @@ void interpretCommands(int connfd){
 
             continue;
 
+		}
+		if (strncmp(message, clientCommands[5], 6) == 0){ //PUTMG
+            char msg[1024]; strcpy(msg,message+6);
+            bzero(message,sizeof(message));
+            strcpy(message,"ER:NOOPN");
+            printf("PUTMG!%s\n", msg);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            continue;
+		}
+		if (strncmp(message, clientCommands[4], 5) == 0){ //NXTMG
+            //char boxName[1024]; strcpy(boxName,message+6);
+            bzero(message,sizeof(message));
+            strcpy(message,"ER:NOOPN");
+            printf("NXTMG\n");
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            continue;
+		}
+		if (strncmp(message, clientCommands[7], 6) == 0){ //CLSBX
+            char boxName[1024]; strcpy(boxName,message+6);
+            bzero(message,sizeof(message));
+            strcpy(message,"ER:NOOPN");
+            printf("CLSBX %s\n", boxName);
+            printf("%s\n", message);
+            write(connfd, message,sizeof(message));
+            continue;
 		}
 		if (strcmp(message, "exit") == 0) break;
 		bzero(message,sizeof(message));
