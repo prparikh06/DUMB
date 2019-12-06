@@ -205,10 +205,10 @@ void handleQuit(int sockfd){
 
 
 void readCommands(int sockfd){
-
+	
 	char message[1024];
 	for (;;){
-		bzero(message,sizeof(message));
+		//bzero(message,sizeof(message));
 		if(connected == 0){
             strcpy(message,clientCommands[0]);
             write(sockfd, message,sizeof(message)); //UPON CONNECTION: CLIENT SENDS HELLO
