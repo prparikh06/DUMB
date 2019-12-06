@@ -9,35 +9,36 @@
 
 int readCommands(int connfd){
 
-	char* message = malloc(1);
-
-	for (;;){
-		read(connfd,message,sizeof(message));
-		printf("received message from client: %s\n", message);
-		if (strcmp(message, "exit") == 0) break;
-		bzero(message, sizeof(message));
-		printf("send a message to the client: \n");
-		int c, i = 0;
-		int max = 1;
-		while((c = getchar()) != '\n' && c != EOF){
-			message[i++] = (char) c;
-			if (i == max){
-				max += 1;
-				message = realloc(message,max);
-			}
-		}
-		message[i] = '\0';			
-
-
-		write(connfd,message,sizeof(message));
-		if (strcmp(message, "exit") == 0) break;
+	//char* message = malloc(100);
+	//message[0] = '\0';
 	
+	//char message[1024];
+	int recv_size = 0;
+	read(connfd, &recv_size, sizeof(recv_size));
+	printf("size of the incoming message: %d\n", ntohl(recv_size));
+	char* message = (char*) malloc(sizeof(char)*ntohl(recv_size));
+	read(connfd,message,sizeof(message));
+	printf("received message from client: %s\n", message);
 
-
+	//bzero(message, sizeof(message));
+	//printf("send a message to the client: \n");
+	/*int c, i = 0;
+	int max = 1;
+	while((c = getchar()) != '\n' && c != EOF){
+		message[i++] = (char) c;
+		if (i == max){
+			max = i+1;
+			message = realloc(message,max);
+		}
 	}
-
-
-
+	message[i] = '\0';			
+	*/
+	/*
+	scanf("%m[^\n]", &message);
+	printf("sending message: %s\n", message);	
+	
+	write(connfd,message,sizeof(message));
+	*/
 }
 int main(int argc, char* argv[]) {
 /*

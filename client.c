@@ -11,32 +11,37 @@
 
 
 int readCommands(int sockfd){
-	char* message = malloc(1);
-	message[0] = '\0';
-	for(;;){
-		printf("please send a message!\n");
-		int c, i = 0;
-		int max = 1;
-		while((c = getchar()) != '\n' && c != EOF){
-			message[i++] = (char) c;
-			if (i == max){
-				max += 1;
-				message = realloc(message,max);
-			}
+	//char* message = malloc(1);
+	//message[0] = '\0';
+	printf("please send a message!\n");
+	/*int c, i = 0;
+	int max = 1;
+	
+	while((c = getchar()) != '\n' && c != EOF){
+		message[i++] = (char) c;
+		if (i == max){
+			max = i+ 1;
+			message = realloc(message,max);
 		}
-		message[i] = '\0';			
-
-		printf("message = %s\n", message);
-		if (strcmp(message, "exit") == 0) break;
-		//send to server
-		write(sockfd, message, sizeof(message));
-		//bzero(message,sizeof(message))
-		printf("awaiting server's message\n");
-		read(sockfd, message,sizeof(message));
-		printf("server's message: %s\n", message);
-		if (strcmp(message,"exit") == 0) break;
-		
 	}
+	message[i] = '\0';			
+	*/
+	char* message;
+	scanf("%m[^\n]",&message);
+	printf("message = %s\tlength = %d\n", message,strlen(message));
+	int len = strlen(message);	
+	int converted = htonl(len);
+	//send size and string to server
+	write(sockfd, &converted, sizeof(converted));
+	write(sockfd, message, sizeof(message));
+	//bzero(message,sizeof(message))
+	/*printf("awaiting server's message\n");
+		
+	read(sockfd, message,sizeof(message));
+	printf("server's message: %s\n", message);
+	*/
+		
+	
 
 
 
