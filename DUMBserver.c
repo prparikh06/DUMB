@@ -191,10 +191,11 @@ int convertNum(char* num){
 int openCommands(char* name, int connfd){
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
 
-    char message[14];
+    char message[1024];
     for(;;){
         bzero(message,sizeof(message));
-        read(connfd,message,sizeof(message));
+        //read(connfd,message,sizeof(message));
+        recv(connfd, message, 1024,0);
         printf("client sent message: %s\n", message);
         if (strcmp(message, "exit") == 0) break;
         if (strcmp(message, clientCommands[1]) == 0){ // GDBYE FROM CLIENT
@@ -226,31 +227,33 @@ int openCommands(char* name, int connfd){
         }
         if (strncmp(message, clientCommands[5], 6) == 0){ //RECEIVED PUTMG
             printf("time to put a msg!!\n");
-            //bzero(message,sizeof(message));
-            //read(connfd,message,sizeof(message)); //WAIT FOR MSG
             printf("The message: %s\n", message);
-            char msg[1024]; bzero(msg,sizeof(msg));
             //get the actual message
-            int bytes; char com[10];
-            sscanf(message, "%s!%d!%s", &com, &bytes, &msg);
-            printf("bytes: %d, com: %s, msg: %s\n", bytes, com, msg);
-            /*
-            char* numBytes = strtok(message, "!");
-            numBytes = strtok(NULL, "!");
-            int bytes = convertNum(numBytes);
-            printf("Length of actual msg: %d\n", bytes);
-            int len = strlen(numBytes); //index where actual msg starts
-            len = 6 + len + 1;
-            strcpy(msg,message+len);
-            */
-            int status = putMessage(name, msg); //putmessage
+            char com[10];
+            int bytes;
+            char m[1024];
+            sscanf(message, "%5s!%d!%s", com, &bytes, m);
+            printf("com: %s\n", com);
+            printf("len: %d\n", bytes);
+            printf("m: %s\n", m);
+            int gotLen = strlen(m);
+            char theRest[bytes+1]; bzero(theRest, sizeof(theRest));
+            char* finalMsg = malloc(bytes+1);
+            if(gotLen < bytes){
+                printf("have to read again\n");
+                recv(connfd, theRest, bytes+1,0);
+                printf("the rest:%s\n", theRest);
+            }
+            sprintf(finalMsg, "%s%s", m, theRest);
+            printf("final msg: %s\n", finalMsg);
+            int status = putMessage(name, finalMsg); //putmessage
             bzero(message,sizeof(message));
             if(status == 0){
                 strcpy(message,"ER:NOOPN");
             }else{
                 sprintf(message, "OK!%d", bytes);
             }
-            printf("PUTMG!%d!%s\n", bytes, msg);
+            printf("PUTMG!%d!%s\n", bytes, finalMsg);
             printf("%s\n", message);
             write(connfd, message,sizeof(message));
             continue;

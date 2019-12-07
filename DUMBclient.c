@@ -123,8 +123,8 @@ int sendMessage(int sockfd, char* message){
 
 	int sent = 0;
 	while (sent < size){
-		//sent+=send(sockfd, message, size,0);
-		sent+= write(sockfd,message,size);
+		sent+=send(sockfd, message, size,0);
+		//sent+= write(sockfd,message,size);
 		printf("client sent: %d of %d\n", sent, size);
 		if (sent < 0) return -1;
 	}
@@ -135,24 +135,18 @@ int sendMessage(int sockfd, char* message){
 void handlePut(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
-    //strcpy(message,clientCommands[5]);
-    //write(sockfd, message,sizeof(message)); //SEND PUTMG
-    //bzero(message,sizeof(message));
     char msg[1024];
-    //char* msg;
-    //bzero(msg,sizeof(msg));
     printf("Okay, enter your message:\n");
     printf("put:> ");
     scanf("%s", &msg);
-    //scanf("%m[^\n]",&msg);
-    int numBytes = strlen(msg)+1;
+
+    unsigned int numBytes = strlen(msg);
     printf("num of bytes: %d\n", numBytes);
-    //strcpy(message, "PUTMG!"); strcat(message, itoa(numBytes)); strcat(message, "!"); strcat(message, msg);
-    char* theMesseage = malloc(11+numBytes);
+    int total = 6+4+1+numBytes+1;
+    char* theMesseage = malloc(total);
     sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
-    //sprintf(message, "PUTMG!%d!%s", numBytes, msg);
-    //*message = clientCommands[5]; message[5] = '!'; message[6] = (char)numBytes; message[7] = '!'; message[8] = msg;
     printf("message: %s\n", theMesseage);
+
     //write(sockfd, message,sizeof(message)); //SEND MSG
     sendMessage(sockfd,theMesseage);
     char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
