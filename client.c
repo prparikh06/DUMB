@@ -31,9 +31,17 @@ int readCommands(int sockfd){
 	printf("message = %s\tlength = %d\n", message,strlen(message));
 	int len = strlen(message);	
 	int converted = htonl(len);
+	
 	//send size and string to server
-	write(sockfd, &converted, sizeof(converted));
-	write(sockfd, message, sizeof(message));
+	send(sockfd, &converted, sizeof(converted),0);
+	int size = strlen(message);
+	
+	int sent = 0;
+	while (sent < size){
+		sent+=send(sockfd, message, size,0);
+		printf("client sent: %d of %d\n", sent, size);
+
+	}
 	//bzero(message,sizeof(message))
 	/*printf("awaiting server's message\n");
 		

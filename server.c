@@ -14,11 +14,31 @@ int readCommands(int connfd){
 	
 	//char message[1024];
 	int recv_size = 0;
-	read(connfd, &recv_size, sizeof(recv_size));
+	recv(connfd, &recv_size, sizeof(recv_size),0);
 	printf("size of the incoming message: %d\n", ntohl(recv_size));
-	char* message = (char*) malloc(sizeof(char)*ntohl(recv_size));
-	read(connfd,message,sizeof(message));
-	printf("received message from client: %s\n", message);
+	int len = ntohl(recv_size);
+	//char* message = (char*) malloc(ntohl(recv_size));
+	//printf("size of message is: %d\n", sizeof(message));
+	char message[len];
+	printf("sze of message should be %d, is actually %d\n", len, sizeof(message));
+	int read= 0; 
+	char finalMessage[len+1];
+	//finalMessage[0] = 0;
+	
+	while(read < len){
+		read += recv(connfd, message, len,0);
+		printf("read = %d, goal = %d\n", read, len);
+		strcat(finalMessage,message);
+		
+
+	}
+	
+	
+
+	finalMessage[len] = '\0';
+
+	//printf("status of recv: %d\n", status);
+	printf("received message from client: %s\n", finalMessage);
 
 	//bzero(message, sizeof(message));
 	//printf("send a message to the client: \n");
