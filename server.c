@@ -5,14 +5,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include "queue.h"
 
-int readCommands(int connfd){
 
-	//char* message = malloc(100);
-	//message[0] = '\0';
-	
-	//char message[1024];
+int readMessage(int connfd){
+
 	int recv_size = 0;
 	recv(connfd, &recv_size, sizeof(recv_size),0);
 	printf("size of the incoming message: %d\n", ntohl(recv_size));
@@ -29,37 +25,16 @@ int readCommands(int connfd){
 		read += recv(connfd, message, len,0);
 		printf("read = %d, goal = %d\n", read, len);
 		strcat(finalMessage,message);
-		
 
 	}
-	
-	
 
 	finalMessage[len] = '\0';
-
-	//printf("status of recv: %d\n", status);
 	printf("received message from client: %s\n", finalMessage);
 
-	//bzero(message, sizeof(message));
-	//printf("send a message to the client: \n");
-	/*int c, i = 0;
-	int max = 1;
-	while((c = getchar()) != '\n' && c != EOF){
-		message[i++] = (char) c;
-		if (i == max){
-			max = i+1;
-			message = realloc(message,max);
-		}
-	}
-	message[i] = '\0';			
-	*/
-	/*
-	scanf("%m[^\n]", &message);
-	printf("sending message: %s\n", message);	
-	
-	write(connfd,message,sizeof(message));
-	*/
 }
+
+
+
 int main(int argc, char* argv[]) {
 /*
 	struct Node* queue = (struct Node*) malloc(sizeof(struct Node));

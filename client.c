@@ -9,26 +9,7 @@
 #include <netdb.h>
 #include <signal.h>
 
-
-int readCommands(int sockfd){
-	//char* message = malloc(1);
-	//message[0] = '\0';
-	printf("please send a message!\n");
-	/*int c, i = 0;
-	int max = 1;
-	
-	while((c = getchar()) != '\n' && c != EOF){
-		message[i++] = (char) c;
-		if (i == max){
-			max = i+ 1;
-			message = realloc(message,max);
-		}
-	}
-	message[i] = '\0';			
-	*/
-	char* message;
-	scanf("%m[^\n]",&message);
-	printf("message = %s\tlength = %d\n", message,strlen(message));
+int sendMessage(int sockfd, char* message){
 	int len = strlen(message);	
 	int converted = htonl(len);
 	
@@ -40,19 +21,19 @@ int readCommands(int sockfd){
 	while (sent < size){
 		sent+=send(sockfd, message, size,0);
 		printf("client sent: %d of %d\n", sent, size);
-
+		if (sent < 0) return -1;
 	}
-	//bzero(message,sizeof(message))
-	/*printf("awaiting server's message\n");
-		
-	read(sockfd, message,sizeof(message));
-	printf("server's message: %s\n", message);
-	*/
-		
-	
+	return 0;
+}
+int readCommands(int sockfd){
+	//char* message = malloc(1);
+	//message[0] = '\0';
+	printf("please send a message!\n");
 
-
-
+	char* message;
+	scanf("%m[^\n]",&message);
+	printf("message = %s\tlength = %d\n", message,strlen(message));
+	sendMessage(sockfd, message)
 }
 
 int main(int argc, char* argv[]) {
