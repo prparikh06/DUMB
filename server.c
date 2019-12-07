@@ -17,19 +17,48 @@ int readMessage(int connfd){
 	//printf("size of message is: %d\n", sizeof(message));
 	char message[len];
 	printf("sze of message should be %d, is actually %d\n", len, sizeof(message));
-	int read= 0; 
+	int read= 0;
 	char finalMessage[len+1];
 	//finalMessage[0] = 0;
-	
+
 	while(read < len){
 		read += recv(connfd, message, len,0);
 		printf("read = %d, goal = %d\n", read, len);
+		printf("string now %s\n", message);
 		strcat(finalMessage,message);
 
 	}
 
 	finalMessage[len] = '\0';
 	printf("received message from client: %s\n", finalMessage);
+
+}
+
+int readd(int connfd){
+    char message[11];
+    //strcpy(message, "PUTMG!2");
+    recv(connfd, message, 11,0);
+    printf("the message: %s\n", message);
+    char com[10]; char msg[10];
+    int len;
+    sscanf(message, "%5s!%d!%s", com, &len, msg);
+    printf("com: %s\n", com);
+    printf("len: %d\n", len);
+    printf("msg: %s\n", msg);
+    printf("strlen(msg): %d\n", strlen(msg));
+    //free(message);
+    if(strlen(msg) < len){
+        char real[len+1]; real = msg;
+        recv(connfd, real[strlen(msg)+1], len-strlen(msg),0);
+        printf("real: %s\n", real);
+
+    }
+
+    //char* a;
+    //int i;
+    //memcpy(&i, message, sizeof(i));
+    //int len = ntohl(message);
+
 
 }
 
@@ -84,7 +113,8 @@ int main(int argc, char* argv[]) {
 	printf("could not accept client :(\n");
 	return 0;
     }
-	readCommands(connfd);
+	//readMessage(connfd);
+	readd(connfd);
 	close(sockfd);
 
 }

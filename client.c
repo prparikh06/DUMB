@@ -10,13 +10,13 @@
 #include <signal.h>
 
 int sendMessage(int sockfd, char* message){
-	int len = strlen(message);	
+	int len = strlen(message);
 	int converted = htonl(len);
-	
+
 	//send size and string to server
 	send(sockfd, &converted, sizeof(converted),0);
 	int size = strlen(message);
-	
+
 	int sent = 0;
 	while (sent < size){
 		sent+=send(sockfd, message, size,0);
@@ -24,6 +24,26 @@ int sendMessage(int sockfd, char* message){
 		if (sent < 0) return -1;
 	}
 	return 0;
+}
+
+int sendd(int sockfd, char* message){
+
+    unsigned int size = strlen(message);
+    int total =6+4+1+size+1;
+    char* buffer = malloc(total);
+
+    sprintf(buffer, "PUTMG!%d!%s", size, message);
+
+    printf("buffer: %s\n", buffer);
+    char com[10]; char msg[10];
+    int len;
+    sscanf(buffer, "%5s!%d", com, &len);
+    printf("com: %s\n", com);
+    printf("len: %d\n", len);
+    send(sockfd, buffer, total,0);
+    return 0;
+
+
 }
 int readCommands(int sockfd){
 	//char* message = malloc(1);
@@ -33,7 +53,8 @@ int readCommands(int sockfd){
 	char* message;
 	scanf("%m[^\n]",&message);
 	printf("message = %s\tlength = %d\n", message,strlen(message));
-	sendMessage(sockfd, message)
+	//sendMessage(sockfd, message);
+	sendd(sockfd, message);
 }
 
 int main(int argc, char* argv[]) {
