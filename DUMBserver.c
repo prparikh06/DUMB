@@ -191,7 +191,7 @@ int convertNum(char* num){
 int openCommands(char* name, int connfd){
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
 
-    char message[1024];
+    char message[14];
     for(;;){
         bzero(message,sizeof(message));
         read(connfd,message,sizeof(message));
@@ -231,13 +231,18 @@ int openCommands(char* name, int connfd){
             printf("The message: %s\n", message);
             char msg[1024]; bzero(msg,sizeof(msg));
             //get the actual message
+            int bytes; char com[10];
+            sscanf(message, "%s!%d!%s", &com, &bytes, &msg);
+            printf("bytes: %d, com: %s, msg: %s\n", bytes, com, msg);
+            /*
             char* numBytes = strtok(message, "!");
             numBytes = strtok(NULL, "!");
             int bytes = convertNum(numBytes);
-
+            printf("Length of actual msg: %d\n", bytes);
             int len = strlen(numBytes); //index where actual msg starts
             len = 6 + len + 1;
             strcpy(msg,message+len);
+            */
             int status = putMessage(name, msg); //putmessage
             bzero(message,sizeof(message));
             if(status == 0){

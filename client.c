@@ -10,20 +10,20 @@
 #include <signal.h>
 
 int sendMessage(int sockfd, char* message){
-	int len = strlen(message);	
+	int len = strlen(message);
 	int converted = htonl(len);
-	
+
 	//send size and string to server
 	send(sockfd, &converted, sizeof(converted),0);
 	int size = strlen(message);
-	
+
 	int sent = 0;
 	while (sent < size){
 		sent+=send(sockfd, message, size,0);
 		printf("client sent: %d of %d\n", sent, size);
 		if (sent < 0) return -1;
 	}
-	
+
 	return 0;
 }
 int readCommands(int sockfd){
@@ -35,13 +35,13 @@ int readCommands(int sockfd){
 	scanf("%m[^\n]",&message);
 	printf("message = %s\tlength = %d\n", message,strlen(message));
 	return sendMessage(sockfd, message);
-	/*int len = strlen(message);	
+	/*int len = strlen(message);
 	int converted = htonl(len);
-	
+
 	//send size and string to server
 	send(sockfd, &converted, sizeof(converted),0);
 	int size = strlen(message);
-	
+
 	int sent = 0;
 	while (sent < size){
 		sent+=send(sockfd, message, size,0);
@@ -50,7 +50,7 @@ int readCommands(int sockfd){
 	}
 	*/
 	return 0;
-	
+
 }
 
 int main(int argc, char* argv[]) {

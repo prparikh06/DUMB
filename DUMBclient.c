@@ -113,6 +113,25 @@ void handleClose(int sockfd){
     }
 }
 
+int sendMessage(int sockfd, char* message){
+	int len = strlen(message);
+	int converted = htonl(len);
+
+	//send size and string to server
+	//send(sockfd, &converted, sizeof(converted),0);
+	int size = strlen(message);
+
+	int sent = 0;
+	while (sent < size){
+		//sent+=send(sockfd, message, size,0);
+		sent+= write(sockfd,message,size);
+		printf("client sent: %d of %d\n", sent, size);
+		if (sent < 0) return -1;
+	}
+
+	return 0;
+}
+
 void handlePut(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
@@ -120,17 +139,22 @@ void handlePut(int sockfd){
     //write(sockfd, message,sizeof(message)); //SEND PUTMG
     //bzero(message,sizeof(message));
     char msg[1024];
+    //char* msg;
     //bzero(msg,sizeof(msg));
     printf("Okay, enter your message:\n");
     printf("put:> ");
-    scanf("%s", msg);
+    scanf("%s", &msg);
+    //scanf("%m[^\n]",&msg);
     int numBytes = strlen(msg)+1;
     printf("num of bytes: %d\n", numBytes);
     //strcpy(message, "PUTMG!"); strcat(message, itoa(numBytes)); strcat(message, "!"); strcat(message, msg);
-    sprintf(message, "PUTMG!%d!%s", numBytes, msg);
+    char* theMesseage = malloc(11+numBytes);
+    sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
+    //sprintf(message, "PUTMG!%d!%s", numBytes, msg);
     //*message = clientCommands[5]; message[5] = '!'; message[6] = (char)numBytes; message[7] = '!'; message[8] = msg;
-    printf("message: %s\n", message);
-    write(sockfd, message,sizeof(message)); //SEND MSG
+    printf("message: %s\n", theMesseage);
+    //write(sockfd, message,sizeof(message)); //SEND MSG
+    sendMessage(sockfd,theMesseage);
     char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
     printf("expecting: %s\n", weWant);
     bzero(message,sizeof(message));
@@ -205,7 +229,7 @@ void handleQuit(int sockfd){
 
 
 void readCommands(int sockfd){
-	
+
 	char message[1024];
 	for (;;){
 		//bzero(message,sizeof(message));
@@ -309,7 +333,7 @@ int main(int argc, char* argv[]) {
     }
 */
     // connect the client socket to server socket
-	while(numAttempts > 3){
+	while(numAttempts < 3){
 		if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
 	        printf("connecting failed :(\n");
 	        exit(0);
