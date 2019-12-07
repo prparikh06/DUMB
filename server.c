@@ -19,7 +19,7 @@ int readMessage(int connfd){
 	printf("sze of message should be %d, is actually %d\n", len, sizeof(message));
 	int read= 0; 
 	char finalMessage[len+1];
-	//finalMessage[0] = 0;
+	finalMessage[0] = 0;
 	
 	while(read < len){
 		read += recv(connfd, message, len,0);
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 	printf("could not accept client :(\n");
 	return 0;
     }
-	readCommands(connfd);
+	readMessage(connfd);
 	close(sockfd);
 
 }
