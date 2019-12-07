@@ -309,10 +309,15 @@ int main(int argc, char* argv[]) {
     }
 */
     // connect the client socket to server socket
-    if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
-        printf("connecting failed :(\n");
-        exit(0);
-    }
+	while(numAttempts > 3){
+		if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
+	        printf("connecting failed :(\n");
+	        exit(0);
+		numAttempts ++;
+		continue;
+    		}
+		else break;
+	}
 
     readCommands(sockfd);
 
