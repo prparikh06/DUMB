@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include "queue.h"
+#include <pthread.h>
 
 typedef struct box{
     char* name; //NAME OF BOX
@@ -14,10 +15,29 @@ typedef struct box{
     int inUse; //BOX STATUS
 }box;
 
+
+typedef struct tNode{
+	pthread_t tid;
+	struct tNode* next;
+
+} tNode;
+
+struct connArgs{
+	int sockfd;
+	struct sockaddr_in clientaddr;
+	int size;
+	pthread_t tid;
+} ;
+
 //server socket port number: random number between 4096 and 65k
 struct box* head = NULL;
 char* clientCommands[] = {"HELLO", "GDBYE", "CREAT ", "OPNBX ", "NXTMG", "PUTMG!", "DELBX ", "CLSBX "};
+tNode* tHead = NULL;
 
+void deleteNode(tNode* tHead){
+
+
+}
 
 int createBox(char* name){
     box* ptr = head;
@@ -333,7 +353,8 @@ int openCommands(char* name, int connfd){
 
 }
 
-void interpretCommands(int connfd){
+void* interpretCommands(void* connfdPtr){
+        int connfd = *((int*) connfdPtr);
 	char message[1024];
 	for (;;){
 		bzero(message,sizeof(message));
@@ -459,7 +480,40 @@ void interpretCommands(int connfd){
 	}
 
 }
+void* acceptConn(void* args){
+	    struct connArgs cArgs = *((struct connArgs*) args);
+	    int sockfd = cArgs.sockfd;
+	    int size = cArgs.sockfd;
+            struct sockaddr_in clientaddr = cArgs.clientaddr;
+	    pthread_t tid = cArgs.tid;
 
+	    int connfd = accept(sockfd, (struct sockaddr*)&clientaddr, &size);
+	    if (connfd < 0) {
+        	printf("could not accept client :(\n");
+	        return 0;
+	    }
+	    printf("connected\n"); 
+	    
+
+	    printf("adding thread to LL...\n");
+	    if (tHead == NULL){
+		tHead = (tNode*) malloc(sizeof(tNode));
+		tHead->next = NULL;
+		tHead->tid = tid;
+	    }
+	    else{
+		tNode* new = (tNode*) malloc(sizeof(tNode));
+		new->next = tHead;
+		new->tid = tid;
+		tHead=new;
+	    }
+
+
+
+            interpretCommands((void*) &connfd);
+
+
+}
 
 int main(int argc, char* argv[]) {
 /*
@@ -493,7 +547,6 @@ int main(int argc, char* argv[]) {
         printf("binding failed\n");
         return 0;
     }
-
     // Now server is ready to listen and verification
     if ((listen(sockfd, 5)) != 0) {
         printf("Listening failed...\n");
@@ -503,22 +556,43 @@ int main(int argc, char* argv[]) {
         printf("Listening..\n");
 
     int size = sizeof(clientaddr);
+    //start a thread here
+    pthread_t tid;
 
+
+    //tNode* tHead = malloc(sizeof(tNode));
+   
+    
     // Accept the data packet from client and verification
-    connfd = accept(sockfd, (struct sockaddr*)&clientaddr, &size);
-    if (connfd < 0) {
-        printf("could not accept client :(\n");
-        return 0;
-    }
-    printf("connected\n");
+    while(1){
+	        struct connArgs* cArgs = malloc(sizeof(struct connArgs));
+ 		cArgs->size = size;
+    		cArgs->clientaddr = clientaddr;
+		cArgs->sockfd = sockfd; 
+   		
+	      //threading
+	   if (pthread_create(&cArgs->tid, NULL, acceptConn,(void*) cArgs) < 0){
+	   	printf("could not thread :( \n");
+		return 0;
+	   } 
+ 	   
 
+ 	   //join 
+ 	   tNode* ptr = tHead;
+	   while(ptr!=NULL){
+		pthread_join(ptr->tid, NULL);
+		printf("joined!!\n");	
+	    }
+	        
 
-
-   interpretCommands(connfd);
+   //interpretCommands(connfd);
 
    //join threads here
+    }
 
-   close(sockfd);
+
+    
+  close(sockfd);
 
 }
 

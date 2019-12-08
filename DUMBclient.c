@@ -26,7 +26,15 @@ int checkCommand(char* str){
 
 }
 
-
+char* scanInput(char message []){
+	//char message[] = "";
+	int c;	
+	while((c = getchar()) != '\n' && c != EOF){
+		//printf("%c ", c);
+		strncat(message,&c,1);
+	}
+	return message;
+}
 void handleOpen(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
@@ -35,7 +43,7 @@ void handleOpen(int sockfd){
     //bzero(message,sizeof(message));
     printf("Okay, open which message box?\n");
     printf("open:> ");
-    //bzero(message,sizeof(message));
+    bzero(message,sizeof(message));
     scanf("%s", message);
     char boxName[1024]; strcpy(boxName,message);
     bzero(message,sizeof(message));
@@ -52,10 +60,12 @@ void handleOpen(int sockfd){
     }else{
         printf("Error. Command was unsuccessful, please try again.\n");
     }
+
 }
 
 void handleCreate(int sockfd){
     char message[1024];
+    //char message[] = "";
     bzero(message,sizeof(message));
     //strcpy(message,clientCommands[2]);
     //write(sockfd, message,sizeof(message)); //SEND CREATEBX
@@ -63,6 +73,8 @@ void handleCreate(int sockfd){
     printf("Okay, create a box name!\n");
     printf("create:> ");
     //bzero(message,sizeof(message));
+    
+
     scanf("%s", message);
     char boxName[1024]; strcpy(boxName,message);
     //int boxLen = strlen(boxName)+1;
@@ -134,11 +146,14 @@ int sendMessage(int sockfd, char* message){
 
 void handlePut(int sockfd){
     char message[1024];
-    bzero(message,sizeof(message));
+    //bzero(message,sizeof(message));
     char msg[1024];
     printf("Okay, enter your message:\n");
     printf("put:> ");
+    //char* msg;
+    //scanf("%m[^\n]", &msg);
     scanf("%s", &msg);
+    printf("PUTMSG = %s\n", msg);    
 
     unsigned int numBytes = strlen(msg);
     printf("num of bytes: %d\n", numBytes);
