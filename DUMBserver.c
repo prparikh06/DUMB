@@ -492,8 +492,8 @@ void* acceptConn(void* args){
         	printf("could not accept client :(\n");
 	        return 0;
 	    }
-	    printf("connected\n"); 
-	    
+	    printf("connected\n");
+
 
 	    printf("adding thread to LL...\n");
 	    if (tHead == NULL){
@@ -561,37 +561,61 @@ int main(int argc, char* argv[]) {
 
 
     //tNode* tHead = malloc(sizeof(tNode));
-   
-    
+
+
     // Accept the data packet from client and verification
-    while(1){
+    while( (connfd = accept(sockfd, (struct sockaddr*)&clientaddr, &size))){
+    /*
 	        struct connArgs* cArgs = malloc(sizeof(struct connArgs));
  		cArgs->size = size;
     		cArgs->clientaddr = clientaddr;
-		cArgs->sockfd = sockfd; 
-   		
+		cArgs->sockfd = sockfd;
+   	*/
+   	printf("connection accepted\n");
 	      //threading
-	   if (pthread_create(&cArgs->tid, NULL, acceptConn,(void*) cArgs) < 0){
+	   if (pthread_create(&tid, NULL, interpretCommands,(void*) &connfd) < 0){
 	   	printf("could not thread :( \n");
 		return 0;
-	   } 
- 	   
-
- 	   //join 
- 	   tNode* ptr = tHead;
-	   while(ptr!=NULL){
-		pthread_join(ptr->tid, NULL);
-		printf("joined!!\n");	
+	   }
+ 	   printf("handler assigned\n");
+ 	   pthread_detach(tid);
+ 	   //ADD TO THE LL
+ 	   printf("adding thread to LL...\n");
+	    if (tHead == NULL){
+		tHead = (tNode*) malloc(sizeof(tNode));
+		tHead->next = NULL;
+		tHead->tid = tid;
 	    }
-	        
+	    else{
+		tNode* new = (tNode*) malloc(sizeof(tNode));
+		new->next = tHead;
+		new->tid = tid;
+		tHead=new;
+	    }
+
+
+ 	   //join
+ 	   printf("here we join?\n");
+ 	   tNode* ptr = tHead;
+        //while(ptr!=NULL){
+		//pthread_join(ptr->tid, NULL);
+		//printf("joined!!\n");
+	    //}
+
 
    //interpretCommands(connfd);
 
    //join threads here
     }
 
+    if (connfd < 0)
+    {
+        printf("accept failed");
+        return 1;
+    }
 
-    
+
+
   close(sockfd);
 
 }
