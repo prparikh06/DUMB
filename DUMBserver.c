@@ -22,10 +22,8 @@ typedef struct tNode{
 
 } tNode;
 
-struct connArgs{
-	int sockfd;
-	struct sockaddr_in clientaddr;
-	int size;
+struct tArgs{
+	int connfd;
 	pthread_t tid;
 } ;
 
@@ -208,7 +206,7 @@ int convertNum(char* num){
     return number;
 }
 
-int openCommands(char* name, int connfd){
+int openCommands(char* name, int connfd, struct tArgs* arg){
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
 
     char message[1024];
@@ -223,6 +221,8 @@ int openCommands(char* name, int connfd){
             if(status == 1){
                 printf("box closed\n");
             }
+            arg->tid = 0;
+            pthread_exit(NULL);
             return 0; //RETURNING 0 TO INDICATE CLOSE CONNECTION
         }
         if (strncmp(message, clientCommands[7], 6) == 0){ //CLSBX FROM CLIENT
@@ -354,7 +354,10 @@ int openCommands(char* name, int connfd){
 }
 
 void* interpretCommands(void* connfdPtr){
-        int connfd = *((int*) connfdPtr);
+        struct tArgs* arg = (struct tArgs*) connfdPtr;
+        int connfd = arg->connfd;
+        int tID = arg->tid;
+        //int connfd = *((int*) connfdPtr);
 	char message[1024];
 	for (;;){
 		bzero(message,sizeof(message));
@@ -367,7 +370,11 @@ void* interpretCommands(void* connfdPtr){
             printf("HELLO\n"); //add timestamps laterrr
             continue;
 		}
-		if (strcmp(message, clientCommands[1]) == 0) break; ///TODO: more to do for quit
+		if (strcmp(message, clientCommands[1]) == 0){ //CLIENT SAID GDBYE
+            arg->tid = 0;
+            pthread_exit(NULL);
+            break; ///TODO: might have more to do for quit
+		}
 		if (strncmp(message, clientCommands[3], 6) == 0){ //OPNBX FROM CLIENT
             printf("time to open!!\n");
             //bzero(message,sizeof(message));
@@ -387,7 +394,7 @@ void* interpretCommands(void* connfdPtr){
             write(connfd, message,sizeof(message));
             //TODO: Listen for openned box commands
             if(status == 1){
-                status = openCommands(boxName, connfd);
+                status = openCommands(boxName, connfd, arg);
                 if(status == 0){ //CLIENT CLOSED CONNECTION
                     break;
                 }
@@ -480,6 +487,7 @@ void* interpretCommands(void* connfdPtr){
 	}
 
 }
+/*
 void* acceptConn(void* args){
 	    struct connArgs cArgs = *((struct connArgs*) args);
 	    int sockfd = cArgs.sockfd;
@@ -514,7 +522,7 @@ void* acceptConn(void* args){
 
 
 }
-
+*/
 int main(int argc, char* argv[]) {
 /*
 	struct Node* queue = (struct Node*) malloc(sizeof(struct Node));
@@ -573,7 +581,10 @@ int main(int argc, char* argv[]) {
    	*/
    	printf("connection accepted\n");
 	      //threading
-	   if (pthread_create(&tid, NULL, interpretCommands,(void*) &connfd) < 0){
+	      struct tArgs* arg = malloc(sizeof(struct tArgs));
+	      arg->connfd = connfd;
+	      arg->tid = tid;
+	   if (pthread_create(&tid, NULL, interpretCommands,(void*) arg) < 0){
 	   	printf("could not thread :( \n");
 		return 0;
 	   }
