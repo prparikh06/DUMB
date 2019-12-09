@@ -65,7 +65,7 @@ int createBox(char* name){
     newBox->next = head;
     head = newBox;
     printBox();
-    sleep(10);
+    //sleep(10);
     return 1;
 }
 
@@ -86,15 +86,15 @@ int openBox(char* name){
     }
     if (ptr->inUse == 1) //already in use...
 	return -1;
-
+/*
     //check if locked:
     if (ptr->isLocked == 1) {
 	printf("already locked!! sorry\n");
 	return -1;
     }
-
+*/
     //lock the box
-    if (pthread_mutex_init(&ptr->lock, NULL) != 0){
+    if (pthread_mutex_init(&ptr->lock, NULL) < 0){
 	printf("mutex failed\n");
 	return 0;
     }
@@ -102,7 +102,7 @@ int openBox(char* name){
     if (lock_status < 0) return 0; //there was an error locking
     ptr->isLocked == 1;
     printf("box \"%s\" has been locked!!!\n", ptr->name);
-    //TODO when to unlock??
+    
     ptr->inUse = 1;
     return 1;
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
@@ -159,7 +159,7 @@ int deleteBox(char* name){
 }
 
 int closeBox(char* name, char* target){
-    if(strcmp(name,target) != 0){ //Current open box does not match closebox arg
+    if(strcmp(name,target) != 0){ //Cnot evenopen box does not match closebox arg
         return 0;
     }
     box* ptr = head;
@@ -170,14 +170,20 @@ int closeBox(char* name, char* target){
         }
         ptr = ptr->next;
     }
-    if(ptr->inUse == 0) //already closed
+    if(ptr->inUse == 0){ //already closed
+	printf("box is not even in use :(\n");
 	return 0;
-    if (ptr->isLocked == 0) //not locked...could be problem
+    }
+    printf("HERE IN CLOSING\n");
+   /* if (ptr->isLocked == 0){ //not locked...could be problem
+	printf("box is not even locked..??\n");
 	return 0;
-
+    }
+*/
     ptr->inUse = 0;
     //actually unlock the box
     int unlock_status = pthread_mutex_unlock(&ptr->lock);
+    printf("unlock status = %d\n", unlock_status);
     if (unlock_status < 0) return 0; //error unlocking
     ptr->isLocked = 0;
 
@@ -392,6 +398,9 @@ void* interpretCommands(void* connfdPtr){
         int connfd = arg->connfd;
         int tID = arg->tid;
         //int connfd = *((int*) connfdPtr);
+	//detach here 
+	pthread_detach(pthread_self());	
+
 
         pthread_mutex_t comm_mutex;
 	char message[1024];
