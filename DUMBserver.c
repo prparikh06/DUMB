@@ -85,16 +85,16 @@ int openBox(char* name){
         return 0; //box doesn't exist
     }
     if (ptr->inUse == 1) //already in use...
-	return 0;
-    ptr->inUse = 1;
+	return -1;
+
     //check if locked:
     if (ptr->isLocked == 1) {
 	printf("already locked!! sorry\n");
-	return 0;
+	return -1;
     }
-   
+
     //lock the box
-    if (pthread_mutex_init(&ptr->lock, NULL) != 0){ 
+    if (pthread_mutex_init(&ptr->lock, NULL) != 0){
 	printf("mutex failed\n");
 	return 0;
     }
@@ -103,6 +103,7 @@ int openBox(char* name){
     ptr->isLocked == 1;
     printf("box \"%s\" has been locked!!!\n", ptr->name);
     //TODO when to unlock??
+    ptr->inUse = 1;
     return 1;
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
 
@@ -173,13 +174,13 @@ int closeBox(char* name, char* target){
 	return 0;
     if (ptr->isLocked == 0) //not locked...could be problem
 	return 0;
-    	
+
     ptr->inUse = 0;
     //actually unlock the box
     int unlock_status = pthread_mutex_unlock(&ptr->lock);
     if (unlock_status < 0) return 0; //error unlocking
     ptr->isLocked = 0;
-            
+
 
     return 1;
 
@@ -369,7 +370,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             //read(connfd,message,sizeof(message)); //WAIT FOR BOX NAME
             char boxName[1024]; strcpy(boxName,message+6);
             printf("Open box %s\n", boxName);
-            strcpy(message,"ER:WHAT?");
+            strcpy(message,"ER:ALOPN");
             printf("OPNBX %s\n", boxName);
             printf("%s\n", message);
             write(connfd, message,sizeof(message));
@@ -421,7 +422,10 @@ void* interpretCommands(void* connfdPtr){
             bzero(message,sizeof(message));
             if(status == 0){
                 strcpy(message,"ER:NEXST");
-            }else{
+            }else if(status == -1){
+                strcpy(message,"ER:OPEND");
+            }
+            else{
                 strcpy(message,"OK!");
             }
             printf("OPNBX %s\n", boxName);
