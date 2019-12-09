@@ -13,6 +13,8 @@ typedef struct box{
     struct Node* queue; //THE QUEUE
     struct box* next; //POINTER TO NEXT BOX
     int inUse; //BOX STATUS
+    int isLocked;
+    pthread_mutex_t lock;
 }box;
 
 
@@ -56,6 +58,7 @@ int createBox(char* name){
     newBox->name = malloc(sizeof(char)*1024);
     strcpy(newBox->name,name);
     newBox->inUse = 0;
+    newBox->isLocked = 0;
     struct Node* qHead = (struct Node*) malloc(sizeof(struct Node));
     newBox->queue = qHead;
 
@@ -81,7 +84,25 @@ int openBox(char* name){
     if(found == 0){
         return 0; //box doesn't exist
     }
+    if (ptr->inUse == 1) //already in use...
+	return 0;
     ptr->inUse = 1;
+    //check if locked:
+    if (ptr->isLocked == 1) {
+	printf("already locked!! sorry\n");
+	return 0;
+    }
+   
+    //lock the box
+    if (pthread_mutex_init(&ptr->lock, NULL) != 0){ 
+	printf("mutex failed\n");
+	return 0;
+    }
+    int lock_status = pthread_mutex_lock(&ptr->lock);
+    if (lock_status < 0) return 0; //there was an error locking
+    ptr->isLocked == 1;
+    printf("box \"%s\" has been locked!!!\n", ptr->name);
+    //TODO when to unlock??
     return 1;
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
 
@@ -148,8 +169,18 @@ int closeBox(char* name, char* target){
         }
         ptr = ptr->next;
     }
-
+    if(ptr->inUse == 0) //already closed
+	return 0;
+    if (ptr->isLocked == 0) //not locked...could be problem
+	return 0;
+    	
     ptr->inUse = 0;
+    //actually unlock the box
+    int unlock_status = pthread_mutex_unlock(&ptr->lock);
+    if (unlock_status < 0) return 0; //error unlocking
+    ptr->isLocked = 0;
+            
+
     return 1;
 
 }
