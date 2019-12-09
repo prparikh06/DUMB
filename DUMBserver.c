@@ -38,6 +38,7 @@ void deleteNode(tNode* tHead){
 }
 
 int createBox(char* name){
+    printf("createbox intiated\n");
     box* ptr = head;
 
     while(ptr != NULL){ //if head hasn't been initialized
@@ -61,6 +62,7 @@ int createBox(char* name){
     newBox->next = head;
     head = newBox;
     printBox();
+    sleep(10);
     return 1;
 }
 
@@ -316,7 +318,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             printf("Create box %s\n", boxName);
             //CREATE BOX AND RETURN STATUS
 
-            // TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
+            /// TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
             int status = createBox(boxName);
             bzero(message,sizeof(message));
             if(status == 0){
@@ -358,6 +360,8 @@ void* interpretCommands(void* connfdPtr){
         int connfd = arg->connfd;
         int tID = arg->tid;
         //int connfd = *((int*) connfdPtr);
+
+        pthread_mutex_t comm_mutex;
 	char message[1024];
 	for (;;){
 		bzero(message,sizeof(message));
@@ -410,7 +414,11 @@ void* interpretCommands(void* connfdPtr){
             //CREATE BOX AND RETURN STATUS
 
             // TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
+            int lockStatus = pthread_mutex_lock(&comm_mutex);
+            printf("lock status: %d\n");
             int status = createBox(boxName);
+            lockStatus = pthread_mutex_unlock(&comm_mutex);
+            printf("lock status: %d\n");
             bzero(message,sizeof(message));
             if(status == 0){
                 strcpy(message,"ER:EXIST");
