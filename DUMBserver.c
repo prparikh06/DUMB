@@ -33,7 +33,8 @@ struct tArgs{
 struct box* head = NULL;
 char* clientCommands[] = {"HELLO", "GDBYE", "CREAT ", "OPNBX ", "NXTMG", "PUTMG!", "DELBX ", "CLSBX "};
 tNode* tHead = NULL;
-pthread_mutex_t globalLock;
+pthread_mutex_t globalLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t clientLock = PTHREAD_MUTEX_INITIALIZER;
 
 void deleteNode(tNode** tHead, pthread_t target){
 	tNode* ptr = *tHead;
@@ -52,22 +53,21 @@ void deleteNode(tNode** tHead, pthread_t target){
 }
 
 int createBox(char* name){
-    
+/*
     //lock tid
     if (pthread_mutex_init(&globalLock, NULL) < 0){
 	printf("mutex failed\n");
 	return 0;
     }
-    
+*/
     int lock_status = pthread_mutex_lock(&globalLock);
     if (lock_status < 0){
 	printf("error locking\n");
 	return 0;
     }
 
-    printf("createbox intiated\n");
     box* ptr = head;
-    
+
     while(ptr != NULL){ //if head hasn't been initialized
         if(strcmp(ptr->name, name) == 0){
             return 0; //DUPLICATE
@@ -75,6 +75,8 @@ int createBox(char* name){
         ptr = ptr->next;
     }
 
+
+    printf("createbox intiated and list locked\n");
     box* newBox = malloc(sizeof(box));
     if(!newBox){
         printf("could not create box\n");
@@ -86,13 +88,13 @@ int createBox(char* name){
     newBox->isLocked = 0;
     struct Node* qHead = (struct Node*) malloc(sizeof(struct Node));
     newBox->queue = qHead;
-    
+
     newBox->next = head;
     head = newBox;
     printBox();
-    sleep(10);
+    //sleep(10);
     //printf("sleeping...\n");
-    //unlock 
+    //unlock
     int unlock_status = pthread_mutex_unlock(&globalLock);
     if (unlock_status < 0) {
 	printf("error unlocking\n");
@@ -102,6 +104,12 @@ int createBox(char* name){
 }
 
 int openBox(char* name){
+    int lock_status = pthread_mutex_lock(&globalLock);
+    if (lock_status < 0){
+	printf("error locking\n");
+	return 0;
+    }
+    printf("locked for openbox, searching list");
     box* ptr = head;
     int found = 0;
 
@@ -113,6 +121,14 @@ int openBox(char* name){
         }
         ptr = ptr->next;
     }
+
+    //sleep(10);
+    int unlock_status = pthread_mutex_unlock(&globalLock);
+    if (unlock_status < 0) {
+	printf("error unlocking\n");
+	return 0;
+    }
+
     if(found == 0){
         return 0; //box doesn't exist
     }
@@ -130,11 +146,11 @@ int openBox(char* name){
 	printf("mutex failed\n");
 	return 0;
     }
-    int lock_status = pthread_mutex_lock(&ptr->lock);
+    lock_status = pthread_mutex_lock(&ptr->lock);
     if (lock_status < 0) return 0; //there was an error locking
     ptr->isLocked = 1;
     printf("box \"%s\" has been locked!!!\n", ptr->name);
-    
+
     ptr->inUse = 1;
     return 1;
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
@@ -150,6 +166,12 @@ void printBox(){
     printf("\n");
 }
 int deleteBox(char* name){
+    int lock_status = pthread_mutex_lock(&globalLock);
+    if (lock_status < 0){
+	printf("error locking\n");
+	return 0;
+    }
+    printf("delete box intiated and list locked\n");
     box* ptr = head;
     box* prev = head;
     int found = 0;
@@ -185,6 +207,12 @@ int deleteBox(char* name){
     free(ptr->queue);
     free(ptr);
     printBox();
+    //sleep(10);
+    int unlock_status = pthread_mutex_unlock(&globalLock);
+    if (unlock_status < 0) {
+	printf("error unlocking\n");
+	return 0;
+    }
     return 1;
 
 
@@ -194,6 +222,11 @@ int closeBox(char* name, char* target){
     if(strcmp(name,target) != 0){ //Cnot evenopen box does not match closebox arg
         return 0;
     }
+    int lock_status = pthread_mutex_lock(&globalLock);
+    if (lock_status < 0){
+	printf("error locking\n");
+	return 0;
+    }
     box* ptr = head;
 
     while(ptr != NULL){
@@ -202,6 +235,13 @@ int closeBox(char* name, char* target){
         }
         ptr = ptr->next;
     }
+    //sleep(10);
+    int unlock_status = pthread_mutex_unlock(&globalLock);
+    if (unlock_status < 0) {
+	printf("error unlocking\n");
+	return 0;
+    }
+
     if(ptr->inUse == 0){ //already closed
 	printf("box is not even in use :(\n");
 	return 0;
@@ -214,7 +254,7 @@ int closeBox(char* name, char* target){
 */
     ptr->inUse = 0;
     //actually unlock the box
-    int unlock_status = pthread_mutex_unlock(&ptr->lock);
+    unlock_status = pthread_mutex_unlock(&ptr->lock);
     printf("unlock status = %d\n", unlock_status);
     if (unlock_status < 0) return 0; //error unlocking
     ptr->isLocked = 0;
@@ -226,6 +266,13 @@ int closeBox(char* name, char* target){
 
 int putMessage(char* name, char* msg){
     printf("my message: %s\n", msg);
+
+    int lock_status = pthread_mutex_lock(&globalLock);
+    if (lock_status < 0){
+	printf("error locking\n");
+	return 0;
+    }
+
     box* ptr = head;
 
     while(ptr != NULL){
@@ -234,6 +281,14 @@ int putMessage(char* name, char* msg){
         }
         ptr = ptr->next;
     }
+
+    //sleep(10);
+    int unlock_status = pthread_mutex_unlock(&globalLock);
+    if (unlock_status < 0) {
+	printf("error unlocking\n");
+	return 0;
+    }
+
     if(ptr->inUse == 0) return 0;
     //struct Node* q = ptr->queue;
     enqueue(&ptr->queue, msg);
@@ -244,6 +299,12 @@ int putMessage(char* name, char* msg){
 }
 
 char* getNextMsg(char* name){
+    int lock_status = pthread_mutex_lock(&globalLock);
+    if (lock_status < 0){
+	printf("error locking\n");
+	return 0;
+    }
+
     box* ptr = head;
 
     while(ptr != NULL){
@@ -252,6 +313,13 @@ char* getNextMsg(char* name){
         }
         ptr = ptr->next;
     }
+    //sleep(10);
+    int unlock_status = pthread_mutex_unlock(&globalLock);
+    if (unlock_status < 0) {
+	printf("error unlocking\n");
+	return 0;
+    }
+
     if(ptr->inUse == 0) return "ER:NOOPN";
     //struct Node* q = ptr->queue;
     if(ptr->queue == NULL){
@@ -430,8 +498,8 @@ void* interpretCommands(void* connfdPtr){
         int connfd = arg->connfd;
         int tID = arg->tid;
         //int connfd = *((int*) connfdPtr);
-	//detach here 
-	pthread_detach(pthread_self());	
+	//detach here
+	pthread_detach(pthread_self());
 
 
         pthread_mutex_t comm_mutex;
@@ -496,10 +564,10 @@ void* interpretCommands(void* connfdPtr){
 		printf("mutex failed\n");
 		return 0;
 	    }
-	    
+
             int lock_status = pthread_mutex_lock(&globalLock);
             printf("lock status: %d\n", lock_status);
-	   
+
             int status = createBox(boxName);
             int unlock_status = pthread_mutex_unlock(&gloablLock);
             printf("unlock status: %d\n",unlock_status);
@@ -683,8 +751,14 @@ int main(int argc, char* argv[]) {
 		return 0;
 	   }
  	   printf("handler assigned\n");
- 	   pthread_detach(tid);
+ 	   //pthread_detach(tid);
+
  	   //ADD TO THE LL
+ 	   int lock_status = pthread_mutex_lock(&clientLock);
+        if (lock_status < 0){
+        printf("error locking\n");
+        return 0;
+        }
  	   printf("adding thread to LL...\n");
 	    if (tHead == NULL){
 		tHead = (tNode*) malloc(sizeof(tNode));
@@ -697,8 +771,14 @@ int main(int argc, char* argv[]) {
 		new->tid = tid;
 		tHead=new;
 	    }
+	    //sleep(10);
+        int unlock_status = pthread_mutex_unlock(&clientLock);
+        if (unlock_status < 0){
+        printf("error locking\n");
+        return 0;
+        }
 
-
+        ///MAKE SURE TO USE CLIENTLOCK WHEN CLEANING UP NODES FROM THEAD LIST
  	   //join
  	   printf("here we join?\n");
  	   tNode* ptr = tHead;
