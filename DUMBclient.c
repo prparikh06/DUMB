@@ -26,14 +26,30 @@ int checkCommand(char* str){
 
 }
 
-char* scanInput(char message []){
+char* scanInput(){//(char message []){
 	//char message[] = "";
-	int c;	
+	/*int c;	
 	while((c = getchar()) != '\n' && c != EOF){
 		//printf("%c ", c);
 		strncat(message,&c,1);
 	}
 	return message;
+	*/
+
+	
+	int c, i = 0;
+	char *message = malloc(i+1);
+	message[i++] = '\0';
+	char* tmp;
+	while((c = getchar()) != EOF && c!= '\n' && (tmp = realloc(message,i+1)) != NULL){
+		message = tmp;
+		message[i-1] = c;
+		message[i++] = '\0';
+		//printf("current str = %s\n", str);
+	}
+	printf("scanned input = %s\n", message);
+	return message;
+
 }
 void handleOpen(int sockfd){
     char message[1024];
@@ -76,6 +92,9 @@ void handleCreate(int sockfd){
     
 
     scanf("%s", message);
+    //char* message = scanInput();
+    
+    
     char boxName[1024]; strcpy(boxName,message);
     //int boxLen = strlen(boxName)+1;
     bzero(message,sizeof(message));
@@ -258,6 +277,9 @@ void readCommands(int sockfd){
 		printf("> ");
 		bzero(message,sizeof(message));
 		scanf("%s", message);
+			
+		//char* message = scanInput();
+
 		printf("message is: %s\n", message);
 		if (strcmp(message, "quit") == 0){
             handleQuit(sockfd);

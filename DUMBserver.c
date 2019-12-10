@@ -33,16 +33,41 @@ struct tArgs{
 struct box* head = NULL;
 char* clientCommands[] = {"HELLO", "GDBYE", "CREAT ", "OPNBX ", "NXTMG", "PUTMG!", "DELBX ", "CLSBX "};
 tNode* tHead = NULL;
+pthread_mutex_t globalLock;
 
-void deleteNode(tNode* tHead){
-
+void deleteNode(tNode** tHead, pthread_t target){
+	tNode* ptr = *tHead;
+	tNode* prev = ptr;
+	while(ptr != NULL){
+		if (ptr->tid == target){ //found tid
+			prev->next = ptr->next;
+			free(ptr);
+			return;
+		}
+		prev = ptr;
+		ptr = ptr->next;
+	}
+	return;
 
 }
 
 int createBox(char* name){
+    
+    //lock tid
+    if (pthread_mutex_init(&globalLock, NULL) < 0){
+	printf("mutex failed\n");
+	return 0;
+    }
+    
+    int lock_status = pthread_mutex_lock(&globalLock);
+    if (lock_status < 0){
+	printf("error locking\n");
+	return 0;
+    }
+
     printf("createbox intiated\n");
     box* ptr = head;
-
+    
     while(ptr != NULL){ //if head hasn't been initialized
         if(strcmp(ptr->name, name) == 0){
             return 0; //DUPLICATE
@@ -61,11 +86,18 @@ int createBox(char* name){
     newBox->isLocked = 0;
     struct Node* qHead = (struct Node*) malloc(sizeof(struct Node));
     newBox->queue = qHead;
-
+    
     newBox->next = head;
     head = newBox;
     printBox();
-    //sleep(10);
+    sleep(10);
+    //printf("sleeping...\n");
+    //unlock 
+    int unlock_status = pthread_mutex_unlock(&globalLock);
+    if (unlock_status < 0) {
+	printf("error unlocking\n");
+	return 0;
+    }
     return 1;
 }
 
@@ -76,7 +108,7 @@ int openBox(char* name){
     while(ptr != NULL){
         printf("currbox name: %s, newname: %s\n", ptr->name, name);
         if(strcmp(ptr->name, name) == 0){
-            found = 1;
+           found = 1;
             break;//FOUND BOX
         }
         ptr = ptr->next;
@@ -86,13 +118,13 @@ int openBox(char* name){
     }
     if (ptr->inUse == 1) //already in use...
 	return -1;
-/*
+
     //check if locked:
     if (ptr->isLocked == 1) {
 	printf("already locked!! sorry\n");
 	return -1;
     }
-*/
+
     //lock the box
     if (pthread_mutex_init(&ptr->lock, NULL) < 0){
 	printf("mutex failed\n");
@@ -100,7 +132,7 @@ int openBox(char* name){
     }
     int lock_status = pthread_mutex_lock(&ptr->lock);
     if (lock_status < 0) return 0; //there was an error locking
-    ptr->isLocked == 1;
+    ptr->isLocked = 1;
     printf("box \"%s\" has been locked!!!\n", ptr->name);
     
     ptr->inUse = 1;
@@ -458,11 +490,21 @@ void* interpretCommands(void* connfdPtr){
             //CREATE BOX AND RETURN STATUS
 
             // TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
-            int lockStatus = pthread_mutex_lock(&comm_mutex);
-            printf("lock status: %d\n");
+	    //lock the box
+	    /*
+ 	    if (pthread_mutex_init(&globalLock, NULL) < 0){
+		printf("mutex failed\n");
+		return 0;
+	    }
+	    
+            int lock_status = pthread_mutex_lock(&globalLock);
+            printf("lock status: %d\n", lock_status);
+	   
             int status = createBox(boxName);
-            lockStatus = pthread_mutex_unlock(&comm_mutex);
-            printf("lock status: %d\n");
+            int unlock_status = pthread_mutex_unlock(&gloablLock);
+            printf("unlock status: %d\n",unlock_status);
+	    */
+	    int status = createBox(boxName);
             bzero(message,sizeof(message));
             if(status == 0){
                 strcpy(message,"ER:EXIST");

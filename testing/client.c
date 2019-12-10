@@ -41,7 +41,7 @@ int readCommands(int sockfd){
 	//message[0] = '\0';
 	printf("please send a message!\n");
 
-	char* message = "";
+	/*char* message = "";
 	//scanf("%m[^\n]",&message);
 	int c;
 	while((c = getchar() != '\n') && c != EOF){
@@ -50,7 +50,20 @@ int readCommands(int sockfd){
 		str[0] = c;
 		strncat(message,str, sizeof(str));
 
+	}*/
+
+	int c;
+	size_t n = 0;
+	char *message = malloc(n+1);
+	message[n++] = '\0';
+	char* tmp;
+	while((c = getchar()) != EOF && c!= '\n' && (tmp = realloc(message,n+1)) != NULL){
+		message = tmp;
+		message[n-1] = c;
+		message[n++] = '\0';
+		//printf("current str = %s\n", str);
 	}
+
 
 
 	printf("message = %s\tlength = %d\n", message,strlen(message));
