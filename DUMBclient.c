@@ -8,13 +8,15 @@
 #include <pthread.h>
 #include <netdb.h>
 #include <signal.h>
+#include <arpa/inet.h>
+
 
 //52613
 int numAttempts = 0;
 char* commandOptions[] = {"quit", "create", "delete", "open", "close", "next", "put"};
 char* clientCommands[] = {"HELLO", "GDBYE", "CREAT", "OPNBX", "NXTMG", "PUTMG", "DELBX", "CLSBX"};
 int connected = 0;
-
+char* ipAddress;
 
 int checkCommand(char* str){
 
@@ -256,16 +258,17 @@ void handleQuit(int sockfd){
 }
 
 
-void readCommands(int sockfd){
+void readCommands(int sockfd,char* ipAddress){
 
 	char message[1024];
 	for (;;){
 		//bzero(message,sizeof(message));
 		if(connected == 0){
+	    
             strcpy(message,clientCommands[0]);
             write(sockfd, message,sizeof(message)); //UPON CONNECTION: CLIENT SENDS HELLO
             bzero(message,sizeof(message));
-            read(sockfd,message,sizeof(message)); //AFTER RECEIVING READY FROM SERVER, CONTINUE TO RECEIVE MORE COMMANDS
+	    read(sockfd,message,sizeof(message)); //AFTER RECEIVING READY FROM SERVER, CONTINUE TO RECEIVE MORE COMMANDS
             if(strcmp(message, "HELLO DUMBv0 ready!") == 0){
                 printf("HELLO DUMBv0 ready!\n");
                 connected = 1;
@@ -373,9 +376,17 @@ int main(int argc, char* argv[]) {
     		}
 		else break;
 	}
+    //get ip address to pass to socket
+    ipAddress  = inet_ntoa(*((struct in_addr*) host->h_addr_list[0]));
+    //SEND THE IP ADDRESS
+    char ip[15];
+    strcpy(ip,ipAddress);
+    printf("ip addy of this machine: %s\n", ip);
+    write(sockfd,ip,sizeof(ip));
 
-    readCommands(sockfd);
-
+   
+    readCommands(sockfd,ipAddress);
+         
     close(sockfd);
 }
 

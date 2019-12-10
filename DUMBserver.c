@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include "queue.h"
 #include <pthread.h>
+#include <time.h>
+
 
 typedef struct box{
     char* name; //NAME OF BOX
@@ -35,6 +37,32 @@ char* clientCommands[] = {"HELLO", "GDBYE", "CREAT ", "OPNBX ", "NXTMG", "PUTMG!
 tNode* tHead = NULL;
 pthread_mutex_t globalLock;
 
+char* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+char* getTime(){
+
+	time_t t = time(NULL);
+	
+	struct tm tm = *localtime(&t);
+	int military = tm.tm_hour * 100 + tm.tm_min;
+	char* month = months[tm.tm_mon];
+	int date = tm.tm_mday;
+	char day[2];
+	sprintf(day, "%d",date);
+	char output[20];
+	sprintf(output, "%d", military);
+	strcat(output," ");
+	strcat(output,day);
+	strcat(output," ");
+
+	strcat(output,month);
+	char* timestamp = malloc(20);
+	strcpy(timestamp,output);
+	return timestamp;   
+   
+}
+
+
 void deleteNode(tNode** tHead, pthread_t target){
 	tNode* ptr = *tHead;
 	tNode* prev = ptr;
@@ -50,6 +78,7 @@ void deleteNode(tNode** tHead, pthread_t target){
 	return;
 
 }
+
 
 int createBox(char* name){
     
@@ -674,6 +703,14 @@ int main(int argc, char* argv[]) {
 		cArgs->sockfd = sockfd;
    	*/
    	printf("connection accepted\n");
+	char ip[20];
+	bzero(ip,sizeof(ip));
+	read(connfd,ip,sizeof(ip));
+	//should be ip address
+	printf("client's ip address: %s\n", ip);	
+
+
+
 	      //threading
 	      struct tArgs* arg = malloc(sizeof(struct tArgs));
 	      arg->connfd = connfd;
@@ -710,7 +747,7 @@ int main(int argc, char* argv[]) {
 
    //interpretCommands(connfd);
 
-   //join threads here
+   
     }
 
     if (connfd < 0)
