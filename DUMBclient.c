@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <signal.h>
 #include <arpa/inet.h>
+#include <ctype.h>
 
 
 //52613
@@ -59,8 +60,8 @@ int checkBoxName(char message[]){
     int len = strlen(message);
     if (len > 25 || len < 5) return -2;
     char c = message[0];
-    if (!(c >= 'a' && c <= 'z') || !(c >= 'A' && c <= 'Z')) return -1;
-    return 0;
+    if (isalpha(c)) return 0;
+    return -1;
 }
 
 
@@ -93,9 +94,9 @@ void handleOpen(int sockfd){
 }
 
 void handleCreate(int sockfd){
-    char message[1024];
-    //char message[] = "";
+    char message[1024];  
     bzero(message,sizeof(message));
+    
     //strcpy(message,clientCommands[2]);
     //write(sockfd, message,sizeof(message)); //SEND CREATEBX
     //bzero(message,sizeof(message));
@@ -103,15 +104,14 @@ void handleCreate(int sockfd){
     printf("create:> ");
     //bzero(message,sizeof(message));
     
-
+    
     scanf("%s", message);
     //char* message = scanInput();
     
     
     char boxName[1024]; strcpy(boxName,message);
     //int boxLen = strlen(boxName)+1;
-
-
+    
     //check if box name is acceptable
     int nameStatus = checkBoxName(message);
     if (nameStatus == -2){ //not acceptable length
@@ -125,12 +125,13 @@ void handleCreate(int sockfd){
 
     bzero(message,sizeof(message));
     sprintf(message, "CREAT %s", boxName);
+    
     printf("message sending: %s\n", message);
 
-    write(sockfd, message,sizeof(message)); //SEND box name
-    printf("creating box: %s\n", boxName);
-    bzero(message,sizeof(message));
-    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    write(sockfd, message,strlen(message)); //SEND box name
+    printf("creating box: %s\n", boxName); 
+    bzero(message,strlen(message));
+    read(sockfd,message,strlen(message)); //WAIT FOR SUCCESS
     if (strcmp(message, "OK!") == 0){
         printf("Success! Message box %s has been created.\n", boxName);
     }else if(strcmp(message, "ER:EXIST") == 0){
