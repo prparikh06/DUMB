@@ -29,7 +29,7 @@ int checkCommand(char* str){
 
 }
 
-//char* 
+//char*
 
 char* append(char s[], char c){
 	printf("in append function\n");
@@ -44,11 +44,11 @@ char* append(char s[], char c){
 	char* final = malloc(sizeof(buffer));
 	strcpy(final,buffer);
 	printf("final = %s\n",final);
-	return final;	
-	
+	return final;
+
 }
 
-int checkBoxName(char message[]){
+int checkBoxName(char* message){
     int len = strlen(message);
     if (len > 25 || len < 5) return -2;
     char c = message[0];
@@ -66,8 +66,25 @@ void handleOpen(int sockfd){
     printf("Okay, open which message box?\n");
     printf("open:> ");
     bzero(message,sizeof(message));
-    scanf("%s", message);
-    char boxName[1024]; strcpy(boxName,message);
+
+    int c, i = 0;
+	char *box = "";
+
+	while((c = getchar()) != EOF ){
+		if (c == '\n' && i == 0){
+    		 printf("is first enter key\n");
+    		i++;
+    		 continue;
+    	}
+    	if (c == '\n') break;
+    	printf("%c ", c);
+    	box = append(box, c);
+    	i++;
+	}
+
+    //scanf("%s", message);
+    int boxLen = strlen(box);
+    char boxName[boxLen]; strcpy(boxName,box);
     bzero(message,sizeof(message));
     sprintf(message, "OPNBX %s", boxName);
     printf("message sending: %s\n", message);
@@ -95,21 +112,34 @@ void handleCreate(int sockfd){
     printf("Okay, create a box name!\n");
     printf("create:> ");
     //bzero(message,sizeof(message));
-    
+    int c, i = 0;
+	char *box = "";
 
-    scanf("%s", message);
+	while((c = getchar()) != EOF ){
+		if (c == '\n' && i == 0){
+    		 printf("is first enter key\n");
+    		i++;
+    		 continue;
+    	}
+    	if (c == '\n') break;
+    	printf("%c ", c);
+    	box = append(box, c);
+    	i++;
+	}
+
+    //scanf("%[^\n]s", message);
     //char* message = scanInput();
-    int nameStatus = checkBoxName(message);
+    int nameStatus = checkBoxName(box);
     if (nameStatus == -2){ //not acceptable length
-	printf("Box name must be 5 to 25 characters long. Please try again.\n");	
-	return;	
+	printf("Box name must be 5 to 25 characters long. Please try again.\n");
+	return;
     }
     else if (nameStatus == -1){
 	printf("Box name must begin with an alphabetical character. Please try again.\n");
 	return;
     }
-    
-    char boxName[1024]; strcpy(boxName,message);
+
+    char boxName[26]; strcpy(boxName,box);
     //int boxLen = strlen(boxName)+1;
     bzero(message,sizeof(message));
     sprintf(message, "CREAT %s", boxName);
@@ -139,8 +169,23 @@ void handleClose(int sockfd){
     printf("Okay, close which box?\n");
     printf("close:> ");
     //bzero(message,sizeof(message));
-    scanf("%s", message);
-    char boxName[1024]; strcpy(boxName,message);
+    int c, i = 0;
+	char *box = "";
+
+	while((c = getchar()) != EOF ){
+		if (c == '\n' && i == 0){
+    		 printf("is first enter key\n");
+    		i++;
+    		 continue;
+    	}
+    	if (c == '\n') break;
+    	printf("%c ", c);
+    	box = append(box, c);
+    	i++;
+	}
+    int boxLen = strlen(box);
+    //scanf("%s", message);
+    char boxName[boxLen]; strcpy(boxName,box);
     bzero(message,sizeof(message));
     sprintf(message, "CLSBX %s", boxName);
     printf("message sending: %s\n", message);
@@ -188,7 +233,7 @@ void handlePut(int sockfd){
     //char* msg;
     //scanf("%m[^\n]", &msg);
     scanf("%s", &msg);
-    printf("PUTMSG = %s\n", msg);    
+    printf("PUTMSG = %s\n", msg);
 
     unsigned int numBytes = strlen(msg);
     printf("num of bytes: %d\n", numBytes);
@@ -219,28 +264,28 @@ void handlePut(int sockfd){
 void handlePut(int sockfd){
     char message[1024];
     printf("Okay, enter your message:\nput:> ");
-    
-    
+
+
     int c, i = 0;
 	char *msg = "";
-	
+
 	while((c = getchar()) != EOF ){
 		if (c == '\n' && i == 0){
     		 printf("is first enter key\n");
-    		i++;	
+    		i++;
     		 continue;
-    	}	
+    	}
     	if (c == '\n') break;
     	printf("%c ", c);
     	msg = append(msg, c);
     	i++;
 	}
 
-   
-    
+
+
     //scanf("%s", &msg);
-    printf("PUTMSG = %s\n", msg);    
-    
+    printf("PUTMSG = %s\n", msg);
+
     unsigned int numBytes = strlen(msg);
     printf("num of bytes: %d\n", numBytes);
     int total = 6+4+1+numBytes+1;
@@ -290,8 +335,24 @@ void handleDelete(int sockfd){
     printf("Okay, delete which box?\n");
     printf("delete:> ");
     //bzero(message,sizeof(message));
-    scanf("%s", message);
-    char boxName[1024]; strcpy(boxName,message);
+    int c, i = 0;
+	char *box = "";
+
+	while((c = getchar()) != EOF ){
+		if (c == '\n' && i == 0){
+    		 printf("is first enter key\n");
+    		i++;
+    		 continue;
+    	}
+    	if (c == '\n') break;
+    	printf("%c ", c);
+    	box = append(box, c);
+    	i++;
+	}
+    int boxLen = strlen(box);
+
+    //scanf("%s", message);
+    char boxName[boxLen]; strcpy(boxName,box);
     bzero(message,sizeof(message));
     sprintf(message, "DELBX %s", boxName);
     printf("message sending: %s\n", message);
@@ -314,11 +375,18 @@ void handleDelete(int sockfd){
     }
 }
 
-void handleQuit(int sockfd){
+int handleQuit(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
     strcpy(message,clientCommands[1]);
     write(sockfd, message,sizeof(message)); //SEND GDBYE
+    bzero(message,sizeof(message));
+    int response = read(sockfd, message, sizeof(message));
+    if(response == 0){
+        return 1;
+    }else{
+        return 0;
+    }
     //bzero(message,sizeof(message));
     //read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
 }
@@ -330,7 +398,7 @@ void readCommands(int sockfd,char* ipAddress){
 	for (;;){
 		//bzero(message,sizeof(message));
 		if(connected == 0){
-	    
+
             strcpy(message,clientCommands[0]);
             write(sockfd, message,sizeof(message)); //UPON CONNECTION: CLIENT SENDS HELLO
             bzero(message,sizeof(message));
@@ -346,13 +414,17 @@ void readCommands(int sockfd,char* ipAddress){
 		printf("> ");
 		bzero(message,sizeof(message));
 		scanf("%s", message);
-			
+
 		//char* message = scanInput();
 
 		printf("message is: %s\n", message);
 		if (strcmp(message, "quit") == 0){
-            handleQuit(sockfd);
-            break;
+            int response = handleQuit(sockfd);
+            if(response == 1) break;
+            else {
+                printf("error disconnecting\n");
+                continue;
+            }
 		}
 		if (strcmp(message,"create") == 0){
             handleCreate(sockfd);
@@ -414,7 +486,7 @@ int main(int argc, char* argv[]) {
     bzero(&servaddr, sizeof(servaddr));
 
   	struct hostent *host = gethostbyname(hostname);
-	
+
 	if (host == NULL){ //TODO error
 		printf("hostname error\n");
 		return 0;
@@ -442,8 +514,8 @@ int main(int argc, char* argv[]) {
     		}
 		else break;
 	}
-    
-    
+
+
     //get ip address to pass to socket
     char str  [1024];
     str[1023] = '\0';
@@ -456,9 +528,9 @@ int main(int argc, char* argv[]) {
     printf("ip addy of this machine: %s\n", ip);
     write(sockfd,ip,sizeof(ip));
 
-   
+
     readCommands(sockfd,ipAddress);
-         
+
     close(sockfd);
 }
 

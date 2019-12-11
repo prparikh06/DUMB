@@ -44,7 +44,7 @@ char* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep
 char* getTime(){
 
 	time_t t = time(NULL);
-	
+
 	struct tm tm = *localtime(&t);
 	int military = tm.tm_hour * 100 + tm.tm_min;
 	char* month = months[tm.tm_mon];
@@ -60,8 +60,8 @@ char* getTime(){
 	strcat(output,month);
 	char* timestamp = malloc(20);
 	strcpy(timestamp,output);
-	return timestamp;   
-   
+	return timestamp;
+
 }
 
 
@@ -392,6 +392,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 printf("box closed\n");
             }
             arg->tid = 0;
+            close(connfd);
             pthread_exit(NULL);
             return 0; //RETURNING 0 TO INDICATE CLOSE CONNECTION
         }
@@ -422,7 +423,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             char com[10];
             int bytes;
             char m[1024];
-            sscanf(message, "%5s!%d!%s", com, &bytes, m);
+            sscanf(message, "%5s!%d!%[^\n]", com, &bytes, m);
             printf("com: %s\n", com);
             printf("len: %d\n", bytes);
             printf("m: %s\n", m);
@@ -549,6 +550,7 @@ void* interpretCommands(void* connfdPtr){
 		}
 		if (strcmp(message, clientCommands[1]) == 0){ //CLIENT SAID GDBYE
             arg->tid = 0;
+            close(connfd);
             pthread_exit(NULL);
             break; ///TODO: might have more to do for quit
 		}
@@ -736,7 +738,7 @@ int main(int argc, char* argv[]) {
 	bzero(ip,sizeof(ip));
 	read(connfd,ip,sizeof(ip));
 	//should be ip address
-	printf("client's ip address: %s\n", ip);	
+	printf("client's ip address: %s\n", ip);
 
 
 
@@ -789,7 +791,7 @@ int main(int argc, char* argv[]) {
 
    //interpretCommands(connfd);
 
-   
+
     }
 
     if (connfd < 0)
