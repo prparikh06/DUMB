@@ -8,7 +8,7 @@
 #include "queue.h"
 #include <pthread.h>
 #include <time.h>
-
+#include <math.h>
 
 typedef struct box{
     char* name; //NAME OF BOX
@@ -36,32 +36,73 @@ struct tArgs{
 struct box* head = NULL;
 char* clientCommands[] = {"HELLO", "GDBYE", "CREAT ", "OPNBX ", "NXTMG", "PUTMG!", "DELBX ", "CLSBX "};
 tNode* tHead = NULL;
-pthread_mutex_t globalLock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t clientLock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t globalLock;
 
 char* months[] = {"Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
 
 char* getTime(){
 
 	time_t t = time(NULL);
-
+	int addZero = 0;
 	struct tm tm = *localtime(&t);
-	int military = tm.tm_hour * 100 + tm.tm_min;
+	
+	int hour =  tm.tm_hour;
+	int military = hour* 100 + tm.tm_min;
+	if (hour == 0) //midnight 
+		addZero = 2;
+	else if (hour < 10) addZero = 1;
 	char* month = months[tm.tm_mon];
-	int date = tm.tm_mday;
-	char day[2];
+	int date = tm.tm_mday;	
+	int len = snprintf(NULL,0,"%d", date);
+	char* day = (char*) malloc(sizeof(char) * (len + 1)); 
 	sprintf(day, "%d",date);
-	char output[20];
-	sprintf(output, "%d", military);
+	//printf("day = %s\n", day);
+	char* ddMM = (char*) malloc(strlen(day) + 1 + strlen(month) + 1);//[50];
+	strcat(ddMM, day);
+	
+	strcat(ddMM, " ");
+	strcat(ddMM, month);
+	//printf("ddMM = %s\n", ddMM);	
+	
+	char* zero = (char*) malloc(3);
+	if (addZero == 2) strcat(zero, "00");
+	else if (addZero == 1) strcat(zero,"0");
+	else strcat(zero, "");
+	//printf("zero = %s\n", zero);
+	
+	len = snprintf(NULL, 0,"%d", military);
+	char* time = (char*) malloc(sizeof(char) * (len + 1));
+	sprintf(time, "%d", military);
+	char* output = (char*) malloc(strlen(zero) + strlen(time) + strlen(ddMM) + 2);
+	
+	strcat(output,zero);
+	strcat(output,time);
+	//printf("output = %s\n", output);
 	strcat(output," ");
-	strcat(output,day);
-	strcat(output," ");
+	//printf("output = %s\n", output);
+	strcat(output,ddMM);
+	//printf("final output: %s\n",output);
+	//char* timestamp = malloc(strlen(output) + 1);
+	//strcpy(timestamp,output);
+	free(day); free(zero);free(time);free(ddMM);
+	return output;   
+   
+}
 
-	strcat(output,month);
-	char* timestamp = malloc(20);
-	strcpy(timestamp,output);
-	return timestamp;
 
+void eventOutput(char* ip, char* event){
+	//printf("ip = %s, even = %s\n", ip,event);
+	
+	char* time = getTime();
+	char* output = (char*) malloc(strlen(time) + 1 + strlen(ip) + 1 + strlen(event) + 1);
+	strcat(output, time);
+	strcat(output, " ");
+	strcat(output, ip);
+	strcat(output, " ");
+	strcat(output, event);
+	printf("%s\n", output);
+	free(output);
 }
 
 
@@ -83,21 +124,22 @@ void deleteNode(tNode** tHead, pthread_t target){
 
 
 int createBox(char* name){
-/*
+    
     //lock tid
     if (pthread_mutex_init(&globalLock, NULL) < 0){
 	printf("mutex failed\n");
 	return 0;
     }
-*/
+    
     int lock_status = pthread_mutex_lock(&globalLock);
     if (lock_status < 0){
 	printf("error locking\n");
 	return 0;
     }
 
+    printf("createbox intiated\n");
     box* ptr = head;
-
+    
     while(ptr != NULL){ //if head hasn't been initialized
         if(strcmp(ptr->name, name) == 0){
             return 0; //DUPLICATE
@@ -105,8 +147,6 @@ int createBox(char* name){
         ptr = ptr->next;
     }
 
-
-    printf("createbox intiated and list locked\n");
     box* newBox = malloc(sizeof(box));
     if(!newBox){
         printf("could not create box\n");
@@ -118,13 +158,13 @@ int createBox(char* name){
     newBox->isLocked = 0;
     struct Node* qHead = (struct Node*) malloc(sizeof(struct Node));
     newBox->queue = qHead;
-
+    
     newBox->next = head;
     head = newBox;
     printBox();
     //sleep(10);
     //printf("sleeping...\n");
-    //unlock
+    //unlock 
     int unlock_status = pthread_mutex_unlock(&globalLock);
     if (unlock_status < 0) {
 	printf("error unlocking\n");
@@ -134,12 +174,6 @@ int createBox(char* name){
 }
 
 int openBox(char* name){
-    int lock_status = pthread_mutex_lock(&globalLock);
-    if (lock_status < 0){
-	printf("error locking\n");
-	return 0;
-    }
-    printf("locked for openbox, searching list");
     box* ptr = head;
     int found = 0;
 
@@ -151,14 +185,6 @@ int openBox(char* name){
         }
         ptr = ptr->next;
     }
-
-    //sleep(10);
-    int unlock_status = pthread_mutex_unlock(&globalLock);
-    if (unlock_status < 0) {
-	printf("error unlocking\n");
-	return 0;
-    }
-
     if(found == 0){
         return 0; //box doesn't exist
     }
@@ -176,11 +202,11 @@ int openBox(char* name){
 	printf("mutex failed\n");
 	return 0;
     }
-    lock_status = pthread_mutex_lock(&ptr->lock);
+    int lock_status = pthread_mutex_lock(&ptr->lock);
     if (lock_status < 0) return 0; //there was an error locking
     ptr->isLocked = 1;
     printf("box \"%s\" has been locked!!!\n", ptr->name);
-
+    
     ptr->inUse = 1;
     return 1;
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
@@ -196,12 +222,6 @@ void printBox(){
     printf("\n");
 }
 int deleteBox(char* name){
-    int lock_status = pthread_mutex_lock(&globalLock);
-    if (lock_status < 0){
-	printf("error locking\n");
-	return 0;
-    }
-    printf("delete box intiated and list locked\n");
     box* ptr = head;
     box* prev = head;
     int found = 0;
@@ -237,12 +257,6 @@ int deleteBox(char* name){
     free(ptr->queue);
     free(ptr);
     printBox();
-    //sleep(10);
-    int unlock_status = pthread_mutex_unlock(&globalLock);
-    if (unlock_status < 0) {
-	printf("error unlocking\n");
-	return 0;
-    }
     return 1;
 
 
@@ -252,11 +266,6 @@ int closeBox(char* name, char* target){
     if(strcmp(name,target) != 0){ //Cnot evenopen box does not match closebox arg
         return 0;
     }
-    int lock_status = pthread_mutex_lock(&globalLock);
-    if (lock_status < 0){
-	printf("error locking\n");
-	return 0;
-    }
     box* ptr = head;
 
     while(ptr != NULL){
@@ -265,13 +274,6 @@ int closeBox(char* name, char* target){
         }
         ptr = ptr->next;
     }
-    //sleep(10);
-    int unlock_status = pthread_mutex_unlock(&globalLock);
-    if (unlock_status < 0) {
-	printf("error unlocking\n");
-	return 0;
-    }
-
     if(ptr->inUse == 0){ //already closed
 	printf("box is not even in use :(\n");
 	return 0;
@@ -284,7 +286,7 @@ int closeBox(char* name, char* target){
 */
     ptr->inUse = 0;
     //actually unlock the box
-    unlock_status = pthread_mutex_unlock(&ptr->lock);
+    int unlock_status = pthread_mutex_unlock(&ptr->lock);
     printf("unlock status = %d\n", unlock_status);
     if (unlock_status < 0) return 0; //error unlocking
     ptr->isLocked = 0;
@@ -296,13 +298,6 @@ int closeBox(char* name, char* target){
 
 int putMessage(char* name, char* msg){
     printf("my message: %s\n", msg);
-
-    int lock_status = pthread_mutex_lock(&globalLock);
-    if (lock_status < 0){
-	printf("error locking\n");
-	return 0;
-    }
-
     box* ptr = head;
 
     while(ptr != NULL){
@@ -311,14 +306,6 @@ int putMessage(char* name, char* msg){
         }
         ptr = ptr->next;
     }
-
-    //sleep(10);
-    int unlock_status = pthread_mutex_unlock(&globalLock);
-    if (unlock_status < 0) {
-	printf("error unlocking\n");
-	return 0;
-    }
-
     if(ptr->inUse == 0) return 0;
     //struct Node* q = ptr->queue;
     enqueue(&ptr->queue, msg);
@@ -329,12 +316,6 @@ int putMessage(char* name, char* msg){
 }
 
 char* getNextMsg(char* name){
-    int lock_status = pthread_mutex_lock(&globalLock);
-    if (lock_status < 0){
-	printf("error locking\n");
-	return 0;
-    }
-
     box* ptr = head;
 
     while(ptr != NULL){
@@ -343,13 +324,6 @@ char* getNextMsg(char* name){
         }
         ptr = ptr->next;
     }
-    //sleep(10);
-    int unlock_status = pthread_mutex_unlock(&globalLock);
-    if (unlock_status < 0) {
-	printf("error unlocking\n");
-	return 0;
-    }
-
     if(ptr->inUse == 0) return "ER:NOOPN";
     //struct Node* q = ptr->queue;
     if(ptr->queue == NULL){
@@ -378,7 +352,7 @@ int convertNum(char* num){
 
 int openCommands(char* name, int connfd, struct tArgs* arg){
     //TODO: WAIT HERE FOR OTHER COMMANDS?: NEXT, PUT, CLOSE
-
+    char* ip = arg->ip;
     char message[1024];
     for(;;){
         bzero(message,sizeof(message));
@@ -392,7 +366,9 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 printf("box closed\n");
             }
             arg->tid = 0;
-            close(connfd);
+	    //event output: GDBYE and disconnect
+	    eventOutput(ip, "GDBYE");
+	    eventOutput(ip,"disconnected");
             pthread_exit(NULL);
             return 0; //RETURNING 0 TO INDICATE CLOSE CONNECTION
         }
@@ -409,9 +385,12 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 strcpy(message,"ER:NOOPN");
             }else{
                 strcpy(message,"OK!");
+		//event output: CLSBX
+	    	eventOutput(ip, "CLSBX");
+           
             }
             printf("CLSBX %s\n", boxName);
-            printf("%s\n", message);
+	   printf("%s\n", message);
             write(connfd, message,sizeof(message));
             if(status == 1) return 1; //SUCCESSFULLY CLOSED BOX
             continue;
@@ -423,7 +402,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             char com[10];
             int bytes;
             char m[1024];
-            sscanf(message, "%5s!%d!%[^\n]", com, &bytes, m);
+            sscanf(message, "%5s!%d!%s", com, &bytes, m);
             printf("com: %s\n", com);
             printf("len: %d\n", bytes);
             printf("m: %s\n", m);
@@ -443,9 +422,13 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 strcpy(message,"ER:NOOPN");
             }else{
                 sprintf(message, "OK!%d", bytes);
+		//event output: PUTMG!
+	    	eventOutput(ip,"PUTMG!");
+
+
             }
             printf("PUTMG!%d!%s\n", bytes, finalMsg);
-            printf("%s\n", message);
+	    printf("%s\n", message);
             write(connfd, message,sizeof(message));
             continue;
         }
@@ -466,8 +449,10 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             else{
                 int bytes = strlen(msg)+1;
                 sprintf(message,"OK!%d!%s", bytes, msg);
+		//event output: NXTMG
+		eventOutput(ip,"NXTMG");
             }
-
+	    
             printf("%s\n", message);
             write(connfd, message,sizeof(message));
             continue;
@@ -494,6 +479,8 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 strcpy(message,"ER:EXIST");
             }else{
                 strcpy(message,"OK!");
+		//event output: CREAT
+		eventOutput(ip,"CREAT");
             }
             printf("CREAT %s\n", boxName);
             printf("%s\n", message);
@@ -531,8 +518,8 @@ void* interpretCommands(void* connfdPtr){
         char *ip = arg->ip;
         printf("interpreting commands' ip addy: %s\n", ip);
         //int connfd = *((int*) connfdPtr);
-	//detach here
-	pthread_detach(pthread_self());
+	//detach here 
+	pthread_detach(pthread_self());	
 
 
         pthread_mutex_t comm_mutex;
@@ -545,14 +532,18 @@ void* interpretCommands(void* connfdPtr){
             bzero(message,sizeof(message));
             strcpy(message,"HELLO DUMBv0 ready!"); // AFTER RECEIVING HELLO, SIGNAL READY
             write(connfd, message,sizeof(message));
-            printf("HELLO\n"); //add timestamps laterrr
-            continue;
+            //printf("HELLO\n"); //add timestamps laterrr
+            //event output: HELLO
+            eventOutput(ip,"HELLO");
+	    continue;
 		}
 		if (strcmp(message, clientCommands[1]) == 0){ //CLIENT SAID GDBYE
             arg->tid = 0;
-            close(connfd);
+		//event output; GDBYE
+		eventOutput(ip,"GDBYE");
+		eventOutput(ip, "disconnected"); 	
             pthread_exit(NULL);
-            break; ///TODO: might have more to do for quit
+            break; ///TODO: might have more to do for quit/disconnect
 		}
 		if (strncmp(message, clientCommands[3], 6) == 0){ //OPNBX FROM CLIENT
             printf("time to open!!\n");
@@ -573,7 +564,9 @@ void* interpretCommands(void* connfdPtr){
             }
             printf("OPNBX %s\n", boxName);
             printf("%s\n", message);
-            write(connfd, message,sizeof(message));
+        //event output: OPNBX
+        eventOutput(ip,"OPNBX");    
+	write(connfd, message,sizeof(message));
             //TODO: Listen for openned box commands
             if(status == 1){
                 status = openCommands(boxName, connfd, arg);
@@ -598,10 +591,10 @@ void* interpretCommands(void* connfdPtr){
 		printf("mutex failed\n");
 		return 0;
 	    }
-
+	    
             int lock_status = pthread_mutex_lock(&globalLock);
             printf("lock status: %d\n", lock_status);
-
+	   
             int status = createBox(boxName);
             int unlock_status = pthread_mutex_unlock(&gloablLock);
             printf("unlock status: %d\n",unlock_status);
@@ -612,6 +605,8 @@ void* interpretCommands(void* connfdPtr){
                 strcpy(message,"ER:EXIST");
             }else{
                 strcpy(message,"OK!");
+		//event output: CREAT
+		eventOutput(ip,"CREAT");
             }
             printf("CREAT %s\n", boxName);
             printf("%s\n", message);
@@ -636,6 +631,8 @@ void* interpretCommands(void* connfdPtr){
                 strcpy(message,"ER:NOTMT");
             }else{
                 strcpy(message,"OK!");
+		//event output: DELBX
+		eventOutput(ip,"DELBX");
             }
             printf("DELBX %s\n", boxName);
             printf("%s\n", message);
@@ -658,6 +655,7 @@ void* interpretCommands(void* connfdPtr){
             bzero(message,sizeof(message));
             strcpy(message,"ER:NOOPN");
             printf("NXTMG\n");
+		
             printf("%s\n", message);
             write(connfd, message,sizeof(message));
             continue;
@@ -738,28 +736,24 @@ int main(int argc, char* argv[]) {
 	bzero(ip,sizeof(ip));
 	read(connfd,ip,sizeof(ip));
 	//should be ip address
-	printf("client's ip address: %s\n", ip);
-
-
-
+	printf("client's ip address: %s\n", ip);	
+	char* connected = "connected";
+	//event output: connected
+	eventOutput(ip,connected);	
+	printf("here\n");	
 	      //threading
 	      struct tArgs* arg = malloc(sizeof(struct tArgs));
 	      arg->connfd = connfd;
-	      arg->tid = tid;
+	      arg->tid = tid; 
 	      strcpy(arg->ip, ip);
+		
 	   if (pthread_create(&tid, NULL, interpretCommands,(void*) arg) < 0){
 	   	printf("could not thread :( \n");
 		return 0;
 	   }
  	   printf("handler assigned\n");
- 	   //pthread_detach(tid);
-
+ 	   pthread_detach(tid);
  	   //ADD TO THE LL
- 	   int lock_status = pthread_mutex_lock(&clientLock);
-        if (lock_status < 0){
-        printf("error locking\n");
-        return 0;
-        }
  	   printf("adding thread to LL...\n");
 	    if (tHead == NULL){
 		tHead = (tNode*) malloc(sizeof(tNode));
@@ -772,14 +766,8 @@ int main(int argc, char* argv[]) {
 		new->tid = tid;
 		tHead=new;
 	    }
-	    //sleep(10);
-        int unlock_status = pthread_mutex_unlock(&clientLock);
-        if (unlock_status < 0){
-        printf("error locking\n");
-        return 0;
-        }
 
-        ///MAKE SURE TO USE CLIENTLOCK WHEN CLEANING UP NODES FROM THEAD LIST
+
  	   //join
  	   printf("here we join?\n");
  	   tNode* ptr = tHead;
@@ -791,7 +779,7 @@ int main(int argc, char* argv[]) {
 
    //interpretCommands(connfd);
 
-
+   
     }
 
     if (connfd < 0)

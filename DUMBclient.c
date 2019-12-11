@@ -381,7 +381,7 @@ int handleQuit(int sockfd){
     strcpy(message,clientCommands[1]);
     write(sockfd, message,sizeof(message)); //SEND GDBYE
     bzero(message,sizeof(message));
-    int response = read(sockfd, message, sizeof(message));
+    int response = read(sockfd, message, sizeof(message)); printf("READY TO QUIT\n");
     if(response == 0){
         return 1;
     }else{
