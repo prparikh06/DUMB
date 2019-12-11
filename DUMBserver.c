@@ -385,6 +385,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 printf("box closed\n");
             }
             arg->tid = 0;
+            close(connfd);
 	    		//event output: GDBYE and disconnect
 	    		eventOutput(ip, "GDBYE");
 	    		eventOutput(ip,"disconnected");
@@ -579,8 +580,9 @@ void* interpretCommands(void* connfdPtr){
 		if (strcmp(message, clientCommands[1]) == 0){ //CLIENT SAID GDBYE
             arg->tid = 0;
              close(connfd);
-				//event output; GDBYE
+				//event output; GDBYE and disconnected
 				eventOutput(ip,"GDBYE");
+			eventOutput(ip,"disconnected");
             pthread_exit(NULL);
 
             break; ///TODO: might have more to do for quit/disconnect
