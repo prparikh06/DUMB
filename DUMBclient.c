@@ -53,6 +53,17 @@ char* scanInput(){//(char message []){
 	return message;
 
 }
+
+
+int checkBoxName(char message[]){
+    int len = strlen(message);
+    if (len > 25 || len < 5) return -2;
+    char c = message[0];
+    if (!(c >= 'a' && c <= 'z') || !(c >= 'A' && c <= 'Z')) return -1;
+    return 0;
+}
+
+
 void handleOpen(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
@@ -99,6 +110,19 @@ void handleCreate(int sockfd){
     
     char boxName[1024]; strcpy(boxName,message);
     //int boxLen = strlen(boxName)+1;
+
+
+    //check if box name is acceptable
+    int nameStatus = checkBoxName(message);
+    if (nameStatus == -2){ //not acceptable length
+	printf("Box name must be 5 to 25 characters long. Please try again.\n");	
+	return;	
+    }
+    else if (nameStatus == -1){
+	printf("Box name must begin with an alphabetical character. Please try again.\n");
+	return;
+    }
+
     bzero(message,sizeof(message));
     sprintf(message, "CREAT %s", boxName);
     printf("message sending: %s\n", message);
