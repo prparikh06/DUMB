@@ -43,7 +43,7 @@ char* append(char s[], char c){
 	//printf("buffer = %s\n",buffer);
 	char* final = malloc(sizeof(buffer));
 	strcpy(final,buffer);
-	//printf("final = %s\n",final);
+	printf("final = %s\n",final);
 	return final;
 
 }
@@ -206,7 +206,7 @@ void handleClose(int sockfd){
 int sendMessage(int sockfd, char* message){
 	int len = strlen(message);
 	int converted = htonl(len);
-
+	
 	//send size and string to server
 	//send(sockfd, &converted, sizeof(converted),0);
 	int size = strlen(message);
@@ -253,7 +253,7 @@ void handlePut(int sockfd){
     int total = 6+4+1+numBytes+1;
     char* theMesseage = malloc(total);
     sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
-    //printf("message: %s\n", theMesseage);
+    printf("message: %s\n", theMesseage);
 
     //write(sockfd, message,sizeof(message)); //SEND MSG
     sendMessage(sockfd,theMesseage);
@@ -356,16 +356,16 @@ int handleQuit(int sockfd){
 
 void readCommands(int sockfd,char* ipAddress){
 
-	char message[1024];
+	char conn[1024];
 	for (;;){
 		//bzero(message,sizeof(message));
 		if(connected == 0){
 
-            strcpy(message,clientCommands[0]);
-            write(sockfd, message,sizeof(message)); //UPON CONNECTION: CLIENT SENDS HELLO
-            bzero(message,sizeof(message));
-	    read(sockfd,message,sizeof(message)); //AFTER RECEIVING READY FROM SERVER, CONTINUE TO RECEIVE MORE COMMANDS
-            if(strcmp(message, "HELLO DUMBv0 ready!") == 0){
+            strcpy(conn,clientCommands[0]);
+            write(sockfd, conn,sizeof(conn)); //UPON CONNECTION: CLIENT SENDS HELLO
+            bzero(conn,sizeof(conn));
+	    		read(sockfd,conn,sizeof(conn)); //AFTER RECEIVING READY FROM SERVER, CONTINUE TO RECEIVE MORE COMMANDS
+            if(strcmp(conn, "HELLO DUMBv0 ready!") == 0){
                 printf("HELLO DUMBv0 ready!\n");
                 connected = 1;
             }else{
@@ -374,8 +374,23 @@ void readCommands(int sockfd,char* ipAddress){
             }
 		}
 		printf("> ");
-		bzero(message,sizeof(message));
-		scanf("%s", message);
+		//bzero(message,sizeof(message));
+		
+		int c, i = 0;
+		char *message = "";
+
+		while((c = getchar()) != EOF ){
+		if (c == '\n' && i == 0){
+    		 //printf("is first enter key\n");
+    		i++;
+    		 continue;
+    	}
+    	if (c == '\n') break;
+    	//printf("%c ", c);
+    	message = append(message, c);
+    	i++;
+		}
+
 
 		//char* message = scanInput();
 

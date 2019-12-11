@@ -402,7 +402,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             continue;
         }
         if (strncmp(message, clientCommands[5], 6) == 0){ //RECEIVED PUTMG
-            //printf("time to put a msg!!\n");
+            printf("time to put a msg!!\n");
             //printf("The message: %s\n", message);
             //get the actual message
             char com[10];
@@ -421,7 +421,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 //printf("the rest:%s\n", theRest);
             }
             sprintf(finalMsg, "%s%s", m, theRest);
-            //printf("final msg: %s\n", finalMsg);
+            printf("final msg: %s\n", finalMsg);
             int status = putMessage(name, finalMsg); //putmessage
             bzero(message,sizeof(message));
             if(status == 0){
@@ -525,12 +525,12 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
         }
 
 
-		else{
+		
 			//if none of the above, then ER:WHAT?
 			//event output: WHAT?
 			eventOutput(ip,"ER:WHAT?");
 			continue;		
-		}
+		
     }
 
 }
@@ -584,8 +584,8 @@ void* interpretCommands(void* connfdPtr){
     				eventOutput(ip,"ER:NEXST");
                 strcpy(message,"ER:NEXST");
             }else if(status == -1){
-            	 //event output: OPEND
-        			eventOutput(ip,"OPEND");    
+            	 //error output: OPEND
+        			eventOutput(ip,"ER:OPEND");    
                 strcpy(message,"ER:OPEND");
             }
             else{
