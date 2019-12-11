@@ -30,31 +30,6 @@ int checkCommand(char* str){
 }
 
 //char* 
-void scanInput(char* message){//(char message []){
-	//char message[] = "";
-	/*int c;	
-	while((c = getchar()) != '\n' && c != EOF){
-		//printf("%c ", c);
-		strncat(message,&c,1);
-	}
-	return message;
-	*/
-
-	
-	int c, i = 0;
-	//char *message = malloc(i+1);
-	message[i++] = '\0';
-	char* tmp;
-	while((c = getchar()) != EOF && c!= '\n' && (tmp = realloc(message,i+1)) != NULL){
-		message = tmp;
-		message[i-1] = c;
-		message[i++] = '\0';
-		//printf("current str = %s\n", str);
-	}
-	printf("scanned input = %s\n", message);
-	//return message;
-
-}
 
 char* append(char s[], char c){
 	printf("in append function\n");
