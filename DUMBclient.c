@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <signal.h>
 #include <arpa/inet.h>
+#include <ctype.h>
 
 
 //52613
@@ -28,31 +29,34 @@ int checkCommand(char* str){
 
 }
 
-char* scanInput(){//(char message []){
-	//char message[] = "";
-	/*int c;	
-	while((c = getchar()) != '\n' && c != EOF){
-		//printf("%c ", c);
-		strncat(message,&c,1);
-	}
-	return message;
-	*/
+//char* 
 
+char* append(char s[], char c){
+	printf("in append function\n");
+	int len = strlen(s);
+	printf("len = %d\n", len);
+	char buffer[len + 2];
+	strcpy (buffer,s);
+	buffer[len] = c;
+	printf("here 1\n");
+	buffer[len + 1] = '\0';
+	printf("buffer = %s\n",buffer);
+	char* final = malloc(sizeof(buffer));
+	strcpy(final,buffer);
+	printf("final = %s\n",final);
+	return final;	
 	
-	int c, i = 0;
-	char *message = malloc(i+1);
-	message[i++] = '\0';
-	char* tmp;
-	while((c = getchar()) != EOF && c!= '\n' && (tmp = realloc(message,i+1)) != NULL){
-		message = tmp;
-		message[i-1] = c;
-		message[i++] = '\0';
-		//printf("current str = %s\n", str);
-	}
-	printf("scanned input = %s\n", message);
-	return message;
-
 }
+
+int checkBoxName(char message[]){
+    int len = strlen(message);
+    if (len > 25 || len < 5) return -2;
+    char c = message[0];
+    if (isalpha(c)) return 0;
+    return -1;
+}
+
+
 void handleOpen(int sockfd){
     char message[1024];
     bzero(message,sizeof(message));
@@ -95,7 +99,15 @@ void handleCreate(int sockfd){
 
     scanf("%s", message);
     //char* message = scanInput();
-    
+    int nameStatus = checkBoxName(message);
+    if (nameStatus == -2){ //not acceptable length
+	printf("Box name must be 5 to 25 characters long. Please try again.\n");	
+	return;	
+    }
+    else if (nameStatus == -1){
+	printf("Box name must begin with an alphabetical character. Please try again.\n");
+	return;
+    }
     
     char boxName[1024]; strcpy(boxName,message);
     //int boxLen = strlen(boxName)+1;
@@ -116,6 +128,7 @@ void handleCreate(int sockfd){
         printf("Error. Command was unsuccessful, please try again.\n");
     }
 }
+
 
 void handleClose(int sockfd){
     char message[1024];
@@ -165,6 +178,7 @@ int sendMessage(int sockfd, char* message){
 	return 0;
 }
 
+/*
 void handlePut(int sockfd){
     char message[1024];
     //bzero(message,sizeof(message));
@@ -199,6 +213,58 @@ void handlePut(int sockfd){
     }
 
 }
+
+*/
+
+void handlePut(int sockfd){
+    char message[1024];
+    printf("Okay, enter your message:\nput:> ");
+    
+    
+    int c, i = 0;
+	char *msg = "";
+	
+	while((c = getchar()) != EOF ){
+		if (c == '\n' && i == 0){
+    		 printf("is first enter key\n");
+    		i++;	
+    		 continue;
+    	}	
+    	if (c == '\n') break;
+    	printf("%c ", c);
+    	msg = append(msg, c);
+    	i++;
+	}
+
+   
+    
+    //scanf("%s", &msg);
+    printf("PUTMSG = %s\n", msg);    
+    
+    unsigned int numBytes = strlen(msg);
+    printf("num of bytes: %d\n", numBytes);
+    int total = 6+4+1+numBytes+1;
+    char* theMesseage = malloc(total);
+    sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
+    printf("message: %s\n", theMesseage);
+
+    //write(sockfd, message,sizeof(message)); //SEND MSG
+    sendMessage(sockfd,theMesseage);
+    char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
+    printf("expecting: %s\n", weWant);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    if (strcmp(message, weWant) == 0){
+        printf("Success! Message has been put.\n");
+    }else if(strcmp(message, "ER:NOOPN") == 0){
+        printf("Failed! You do not currently have the box opened, so you can't close it.\n");
+    }
+    else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+
+}
+
 
 void handleNext(int sockfd){
     char message[1024];
@@ -348,7 +414,7 @@ int main(int argc, char* argv[]) {
     bzero(&servaddr, sizeof(servaddr));
 
   	struct hostent *host = gethostbyname(hostname);
-
+	
 	if (host == NULL){ //TODO error
 		printf("hostname error\n");
 		return 0;
@@ -376,11 +442,17 @@ int main(int argc, char* argv[]) {
     		}
 		else break;
 	}
+    
+    
     //get ip address to pass to socket
-    ipAddress  = inet_ntoa(*((struct in_addr*) host->h_addr_list[0]));
-    //SEND THE IP ADDRESS
-    char ip[15];
-    strcpy(ip,ipAddress);
+    char str  [1024];
+    str[1023] = '\0';
+    gethostname(str, 1023);
+    printf("curr machine host: %s\n", str);
+    struct hostent *currHost = gethostbyname(str);
+    ipAddress  = inet_ntoa(*((struct in_addr*) currHost->h_addr_list[0]));
+    char ip[20];
+    strcpy(ip,ipAddress); //SEND THE IP ADDRESS
     printf("ip addy of this machine: %s\n", ip);
     write(sockfd,ip,sizeof(ip));
 
