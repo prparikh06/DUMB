@@ -414,7 +414,7 @@ int main(int argc, char* argv[]) {
     bzero(&servaddr, sizeof(servaddr));
 
   	struct hostent *host = gethostbyname(hostname);
-
+	
 	if (host == NULL){ //TODO error
 		printf("hostname error\n");
 		return 0;
@@ -442,11 +442,17 @@ int main(int argc, char* argv[]) {
     		}
 		else break;
 	}
+    
+    
     //get ip address to pass to socket
-    ipAddress  = inet_ntoa(*((struct in_addr*) host->h_addr_list[0]));
-    //SEND THE IP ADDRESS
-    char ip[15];
-    strcpy(ip,ipAddress);
+    char str  [1024];
+    str[1023] = '\0';
+    gethostname(str, 1023);
+    printf("curr machine host: %s\n", str);
+    struct hostent *currHost = gethostbyname(str);
+    ipAddress  = inet_ntoa(*((struct in_addr*) currHost->h_addr_list[0]));
+    char ip[20];
+    strcpy(ip,ipAddress); //SEND THE IP ADDRESS
     printf("ip addy of this machine: %s\n", ip);
     write(sockfd,ip,sizeof(ip));
 

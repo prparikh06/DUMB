@@ -29,6 +29,7 @@ typedef struct tNode{
 struct tArgs{
 	int connfd;
 	pthread_t tid;
+	char ip[20];
 } ;
 
 //server socket port number: random number between 4096 and 65k
@@ -458,6 +459,8 @@ void* interpretCommands(void* connfdPtr){
         struct tArgs* arg = (struct tArgs*) connfdPtr;
         int connfd = arg->connfd;
         int tID = arg->tid;
+        char *ip = arg->ip;
+        printf("interpreting commands' ip addy: %s\n", ip);
         //int connfd = *((int*) connfdPtr);
 	//detach here 
 	pthread_detach(pthread_self());	
@@ -610,50 +613,8 @@ void* interpretCommands(void* connfdPtr){
 	}
 
 }
-/*
-void* acceptConn(void* args){
-	    struct connArgs cArgs = *((struct connArgs*) args);
-	    int sockfd = cArgs.sockfd;
-	    int size = cArgs.sockfd;
-            struct sockaddr_in clientaddr = cArgs.clientaddr;
-	    pthread_t tid = cArgs.tid;
 
-	    int connfd = accept(sockfd, (struct sockaddr*)&clientaddr, &size);
-	    if (connfd < 0) {
-        	printf("could not accept client :(\n");
-	        return 0;
-	    }
-	    printf("connected\n");
-
-
-	    printf("adding thread to LL...\n");
-	    if (tHead == NULL){
-		tHead = (tNode*) malloc(sizeof(tNode));
-		tHead->next = NULL;
-		tHead->tid = tid;
-	    }
-	    else{
-		tNode* new = (tNode*) malloc(sizeof(tNode));
-		new->next = tHead;
-		new->tid = tid;
-		tHead=new;
-	    }
-
-
-
-            interpretCommands((void*) &connfd);
-
-
-}
-*/
 int main(int argc, char* argv[]) {
-/*
-	struct Node* queue = (struct Node*) malloc(sizeof(struct Node));
-	enqueue(&queue, "parikh");
-	enqueue(&queue,"priya");
-	printList(queue);
-    printf("size of queue should be 2: %d\n", size);
-*/
 
     int sockfd, connfd;
     struct sockaddr_in servaddr, clientaddr;
@@ -715,6 +676,7 @@ int main(int argc, char* argv[]) {
 	      struct tArgs* arg = malloc(sizeof(struct tArgs));
 	      arg->connfd = connfd;
 	      arg->tid = tid;
+	      strcpy(arg->ip, ip);
 	   if (pthread_create(&tid, NULL, interpretCommands,(void*) arg) < 0){
 	   	printf("could not thread :( \n");
 		return 0;
