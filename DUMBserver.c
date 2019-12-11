@@ -416,45 +416,45 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             if(status == 1) return 1; //SUCCESSFULLY CLOSED BOX
             continue;
         }
+        
         if (strncmp(message, clientCommands[5], 6) == 0){ //RECEIVED PUTMG
             printf("time to put a msg!!\n");
-            //printf("The message: %s\n", message);
+            printf("The message: %s\n", message);
             //get the actual message
             char com[10];
             int bytes;
             char m[1024];
-            sscanf(message, "%5s!%d!%s", com, &bytes, m);
-            //printf("com: %s\n", com);
-            //printf("len: %d\n", bytes);
-            //printf("m: %s\n", m);
+            sscanf(message, "%5s!%d!%[^\n]", com, &bytes, m);
+            printf("com: %s\n", com);
+            printf("len: %d\n", bytes);
+            printf("m: %s\n", m);
             int gotLen = strlen(m);
             char theRest[bytes+1]; bzero(theRest, sizeof(theRest));
             char* finalMsg = malloc(bytes+1);
             if(gotLen < bytes){
-                //printf("have to read again\n");
+                printf("have to read again\n");
                 recv(connfd, theRest, bytes+1,0);
-                //printf("the rest:%s\n", theRest);
+                printf("the rest:%s\n", theRest);
             }
             sprintf(finalMsg, "%s%s", m, theRest);
             printf("final msg: %s\n", finalMsg);
             int status = putMessage(name, finalMsg); //putmessage
             bzero(message,sizeof(message));
             if(status == 0){
-            	//error output:NOOPN
-    				eventOutput(ip,"ER:NOOPN");
+                //error output:NOOPN
+    			eventOutput(ip,"ER:NOOPN");
                 strcpy(message,"ER:NOOPN");
             }else{
+                //event output:PUTMG
+    			eventOutput(ip,"PUTMG");
                 sprintf(message, "OK!%d", bytes);
-					//event output: PUTMG!
-	  			  	eventOutput(ip,"PUTMG!");
-
-
             }
-            //printf("PUTMG!%d!%s\n", bytes, finalMsg);
-	    		//printf("%s\n", message);
+            printf("PUTMG!%d!%s\n", bytes, finalMsg);
+            printf("%s\n", message);
             write(connfd, message,sizeof(message));
             continue;
         }
+
         if (strcmp(message, clientCommands[4]) == 0){ //NXTMG
             bzero(message,sizeof(message));
             char* msg = getNextMsg(name);
