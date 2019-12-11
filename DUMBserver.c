@@ -325,8 +325,8 @@ int putMessage(char* name, char* msg){
     if(ptr->inUse == 0) return 0;
     //struct Node* q = ptr->queue;
     enqueue(&ptr->queue, msg);
-    printList(ptr->queue);
-    printf("in my box: %s\n", ptr->queue->data);
+    //printList(ptr->queue);
+    //printf("in my box: %s\n", ptr->queue->data);
     return 1;
 
 }
@@ -419,26 +419,26 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
         }
         
         if (strncmp(message, clientCommands[5], 6) == 0){ //RECEIVED PUTMG
-            printf("time to put a msg!!\n");
-            printf("The message: %s\n", message);
+            //printf("time to put a msg!!\n");
+            //printf("The message: %s\n", message);
             //get the actual message
             char com[10];
             int bytes;
             char m[1024];
             sscanf(message, "%5s!%d!%[^\n]", com, &bytes, m);
-            printf("com: %s\n", com);
-            printf("len: %d\n", bytes);
-            printf("m: %s\n", m);
+            //printf("com: %s\n", com);
+            //printf("len: %d\n", bytes);
+            //printf("m: %s\n", m);
             int gotLen = strlen(m);
             char theRest[bytes+1]; bzero(theRest, sizeof(theRest));
             char* finalMsg = malloc(bytes+1);
             if(gotLen < bytes){
-                printf("have to read again\n");
+                //printf("have to read again\n");
                 recv(connfd, theRest, bytes+1,0);
-                printf("the rest:%s\n", theRest);
+                //printf("the rest:%s\n", theRest);
             }
             sprintf(finalMsg, "%s%s", m, theRest);
-            printf("final msg: %s\n", finalMsg);
+            //printf("final msg: %s\n", finalMsg);
             int status = putMessage(name, finalMsg); //putmessage
             bzero(message,sizeof(message));
             if(status == 0){
@@ -450,8 +450,8 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
     			eventOutput(ip,"PUTMG");
                 sprintf(message, "OK!%d", bytes);
             }
-            printf("PUTMG!%d!%s\n", bytes, finalMsg);
-            printf("%s\n", message);
+            //printf("PUTMG!%d!%s\n", bytes, finalMsg);
+            //printf("%s\n", message);
             write(connfd, message,sizeof(message));
             continue;
         }

@@ -43,7 +43,7 @@ char* append(char s[], char c){
 	//printf("buffer = %s\n",buffer);
 	char* final = malloc(sizeof(buffer));
 	strcpy(final,buffer);
-	printf("final = %s\n",final);
+	//printf("final = %s\n",final);
 	return final;
 
 }
@@ -239,7 +239,7 @@ void handlePut(int sockfd){
     		 continue;
     	}
     	if (c == '\n') break;
-    	printf("%c ", c);
+    	//printf("%c ", c);
     	msg = append(msg, c);
     	i++;
 	}
@@ -247,10 +247,10 @@ void handlePut(int sockfd){
 
 
     //scanf("%s", &msg);
-    printf("PUTMSG = %s\n", msg);
+    //printf("PUTMSG = %s\n", msg);
 
     unsigned int numBytes = strlen(msg);
-    printf("num of bytes: %d\n", numBytes);
+    //printf("num of bytes: %d\n", numBytes);
     int total = 6+4+1+numBytes+1;
     char* theMesseage = malloc(total);
     sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
@@ -259,7 +259,7 @@ void handlePut(int sockfd){
     //write(sockfd, message,sizeof(message)); //SEND MSG
     sendMessage(sockfd,theMesseage);
     char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
-    printf("expecting: %s\n", weWant);
+    //printf("expecting: %s\n", weWant);
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, weWant) == 0){
@@ -308,7 +308,7 @@ void handleDelete(int sockfd){
     		 continue;
     	}
     	if (c == '\n') break;
-    	printf("%c ", c);
+    	//printf("%c ", c);
     	box = append(box, c);
     	i++;
 	}
@@ -395,7 +395,7 @@ void readCommands(int sockfd,char* ipAddress){
 
 		//char* message = scanInput();
 
-		printf("message is: %s\n", message);
+		//printf("message is: %s\n", message);
 		if (strcmp(message, "quit") == 0){
             int response = handleQuit(sockfd);
             if(response == 1) break;
@@ -435,9 +435,9 @@ void readCommands(int sockfd,char* ipAddress){
 		}
 		
 		//else, send the command to server to print ER:WHAT?
-		
+			
 		printf("This is not a valid command. Try again!\n"); 
-		write(sockfd,message,sizeof(message));
+		write(sockfd,message,strlen(message));
 		continue;
 		
 		
