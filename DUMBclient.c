@@ -29,7 +29,8 @@ int checkCommand(char* str){
 
 }
 
-char* scanInput(){//(char message []){
+//char* 
+void scanInput(char* message){//(char message []){
 	//char message[] = "";
 	/*int c;	
 	while((c = getchar()) != '\n' && c != EOF){
@@ -41,7 +42,7 @@ char* scanInput(){//(char message []){
 
 	
 	int c, i = 0;
-	char *message = malloc(i+1);
+	//char *message = malloc(i+1);
 	message[i++] = '\0';
 	char* tmp;
 	while((c = getchar()) != EOF && c!= '\n' && (tmp = realloc(message,i+1)) != NULL){
@@ -51,10 +52,26 @@ char* scanInput(){//(char message []){
 		//printf("current str = %s\n", str);
 	}
 	printf("scanned input = %s\n", message);
-	return message;
+	//return message;
 
 }
 
+char* append(char s[], char c){
+	printf("in append function\n");
+	int len = strlen(s);
+	printf("len = %d\n", len);
+	char buffer[len + 2];
+	strcpy (buffer,s);
+	buffer[len] = c;
+	printf("here 1\n");
+	buffer[len + 1] = '\0';
+	printf("buffer = %s\n",buffer);
+	char* final = malloc(sizeof(buffer));
+	strcpy(final,buffer);
+	printf("final = %s\n",final);
+	return final;	
+	
+}
 
 int checkBoxName(char message[]){
     int len = strlen(message);
@@ -94,9 +111,9 @@ void handleOpen(int sockfd){
 }
 
 void handleCreate(int sockfd){
-    char message[1024];  
+    char message[1024];
+    //char message[] = "";
     bzero(message,sizeof(message));
-    
     //strcpy(message,clientCommands[2]);
     //write(sockfd, message,sizeof(message)); //SEND CREATEBX
     //bzero(message,sizeof(message));
@@ -104,15 +121,9 @@ void handleCreate(int sockfd){
     printf("create:> ");
     //bzero(message,sizeof(message));
     
-    
+
     scanf("%s", message);
     //char* message = scanInput();
-    
-    
-    char boxName[1024]; strcpy(boxName,message);
-    //int boxLen = strlen(boxName)+1;
-    
-    //check if box name is acceptable
     int nameStatus = checkBoxName(message);
     if (nameStatus == -2){ //not acceptable length
 	printf("Box name must be 5 to 25 characters long. Please try again.\n");	
@@ -122,16 +133,17 @@ void handleCreate(int sockfd){
 	printf("Box name must begin with an alphabetical character. Please try again.\n");
 	return;
     }
-
+    
+    char boxName[1024]; strcpy(boxName,message);
+    //int boxLen = strlen(boxName)+1;
     bzero(message,sizeof(message));
     sprintf(message, "CREAT %s", boxName);
-    
     printf("message sending: %s\n", message);
 
-    write(sockfd, message,strlen(message)); //SEND box name
-    printf("creating box: %s\n", boxName); 
-    bzero(message,strlen(message));
-    read(sockfd,message,strlen(message)); //WAIT FOR SUCCESS
+    write(sockfd, message,sizeof(message)); //SEND box name
+    printf("creating box: %s\n", boxName);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, "OK!") == 0){
         printf("Success! Message box %s has been created.\n", boxName);
     }else if(strcmp(message, "ER:EXIST") == 0){
@@ -141,6 +153,7 @@ void handleCreate(int sockfd){
         printf("Error. Command was unsuccessful, please try again.\n");
     }
 }
+
 
 void handleClose(int sockfd){
     char message[1024];
@@ -190,6 +203,7 @@ int sendMessage(int sockfd, char* message){
 	return 0;
 }
 
+/*
 void handlePut(int sockfd){
     char message[1024];
     //bzero(message,sizeof(message));
@@ -224,6 +238,58 @@ void handlePut(int sockfd){
     }
 
 }
+
+*/
+
+void handlePut(int sockfd){
+    char message[1024];
+    printf("Okay, enter your message:\nput:> ");
+    
+    
+    int c, i = 0;
+	char *msg = "";
+	
+	while((c = getchar()) != EOF ){
+		if (c == '\n' && i == 0){
+    		 printf("is first enter key\n");
+    		i++;	
+    		 continue;
+    	}	
+    	if (c == '\n') break;
+    	printf("%c ", c);
+    	msg = append(msg, c);
+    	i++;
+	}
+
+   
+    
+    //scanf("%s", &msg);
+    printf("PUTMSG = %s\n", msg);    
+    
+    unsigned int numBytes = strlen(msg);
+    printf("num of bytes: %d\n", numBytes);
+    int total = 6+4+1+numBytes+1;
+    char* theMesseage = malloc(total);
+    sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
+    printf("message: %s\n", theMesseage);
+
+    //write(sockfd, message,sizeof(message)); //SEND MSG
+    sendMessage(sockfd,theMesseage);
+    char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
+    printf("expecting: %s\n", weWant);
+    bzero(message,sizeof(message));
+    read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
+    if (strcmp(message, weWant) == 0){
+        printf("Success! Message has been put.\n");
+    }else if(strcmp(message, "ER:NOOPN") == 0){
+        printf("Failed! You do not currently have the box opened, so you can't close it.\n");
+    }
+    else{
+        printf("Error. Command was unsuccessful, please try again.\n");
+    }
+
+}
+
 
 void handleNext(int sockfd){
     char message[1024];

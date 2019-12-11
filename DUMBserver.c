@@ -119,7 +119,7 @@ int createBox(char* name){
     newBox->next = head;
     head = newBox;
     printBox();
-    sleep(10);
+    //sleep(10);
     //printf("sleeping...\n");
     //unlock 
     int unlock_status = pthread_mutex_unlock(&globalLock);
