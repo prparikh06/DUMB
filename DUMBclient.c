@@ -223,6 +223,7 @@ int sendMessage(int sockfd, char* message){
 }
 
 
+
 void handlePut(int sockfd){
     char message[1024];
     printf("Okay, enter your message:\nput:> ");
@@ -233,12 +234,12 @@ void handlePut(int sockfd){
 
 	while((c = getchar()) != EOF ){
 		if (c == '\n' && i == 0){
-    		 //printf("is first enter key\n");
+    		 printf("is first enter key\n");
     		i++;
     		 continue;
     	}
     	if (c == '\n') break;
-    	//printf("%c ", c);
+    	printf("%c ", c);
     	msg = append(msg, c);
     	i++;
 	}
@@ -249,7 +250,7 @@ void handlePut(int sockfd){
     printf("PUTMSG = %s\n", msg);
 
     unsigned int numBytes = strlen(msg);
-    //printf("num of bytes: %d\n", numBytes);
+    printf("num of bytes: %d\n", numBytes);
     int total = 6+4+1+numBytes+1;
     char* theMesseage = malloc(total);
     sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
@@ -258,7 +259,7 @@ void handlePut(int sockfd){
     //write(sockfd, message,sizeof(message)); //SEND MSG
     sendMessage(sockfd,theMesseage);
     char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
-    //printf("expecting: %s\n", weWant);
+    printf("expecting: %s\n", weWant);
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, weWant) == 0){

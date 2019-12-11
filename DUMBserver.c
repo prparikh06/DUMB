@@ -298,7 +298,14 @@ int closeBox(char* name, char* target){
 }
 
 int putMessage(char* name, char* msg){
-    //printf("my message: %s\n", msg);
+    printf("my message: %s\n", msg);
+
+    int lock_status = pthread_mutex_lock(&globalLock);
+    if (lock_status < 0){
+	printf("error locking\n");
+	return 0;
+    }
+
     box* ptr = head;
 
     while(ptr != NULL){
@@ -307,11 +314,19 @@ int putMessage(char* name, char* msg){
         }
         ptr = ptr->next;
     }
+
+    //sleep(10);
+    int unlock_status = pthread_mutex_unlock(&globalLock);
+    if (unlock_status < 0) {
+	printf("error unlocking\n");
+	return 0;
+    }
+
     if(ptr->inUse == 0) return 0;
     //struct Node* q = ptr->queue;
     enqueue(&ptr->queue, msg);
-    //printList(ptr->queue);
-    //printf("in my box: %s\n", ptr->queue->data);
+    printList(ptr->queue);
+    printf("in my box: %s\n", ptr->queue->data);
     return 1;
 
 }
