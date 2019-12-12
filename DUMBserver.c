@@ -125,6 +125,9 @@ void deleteNode(tNode** tHead, pthread_t target){
 
 int createBox(char* name){
     
+
+
+
     //lock tid
     if (pthread_mutex_init(&globalLock, NULL) < 0){
 	//printf("mutex failed\n");
@@ -146,6 +149,18 @@ int createBox(char* name){
         }
         ptr = ptr->next;
     }
+
+    //check box name
+    int nameStatus = checkBoxName(name);
+    if (nameStatus == -2){ //not acceptable length
+	    //printf("Box name must be 5 to 25 characters long. Please try again.\n");
+	    return -2;
+    }
+    else if (nameStatus == -1){
+	    //printf("Box name must begin with an alphabetical character. Please try again.\n");
+	    return -1;
+    }
+    
 
     box* newBox = malloc(sizeof(box));
     if(!newBox){
@@ -261,6 +276,14 @@ int deleteBox(char* name){
     return 1;
 
 
+}
+
+int checkBoxName(char* message){
+    int len = strlen(message);
+    if (len > 25 || len < 5) return -2;
+    char c = message[0];
+    if (isalpha(c)) return 0;
+    return -1;
 }
 
 int closeBox(char* name, char* target){
@@ -503,9 +526,14 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             //printf("Create box %s\n", boxName);
             //CREATE BOX AND RETURN STATUS
 
-            /// TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
+            
             int status = createBox(boxName);
             bzero(message,sizeof(message));
+            if (status == -1 || status == -2) {
+                //error output: WHAT - should be between 5 and 25 characters and start with alphabetical char
+                eventOutput(ip, "ER:WHAT");
+                strcpy(message,"ER:WHAT");
+            }
             if(status == 0){
             	//error output:EXIST
     				eventOutput(ip,"ER:EXIST");

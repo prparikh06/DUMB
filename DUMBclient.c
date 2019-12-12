@@ -129,7 +129,7 @@ void handleCreate(int sockfd){
 
     //scanf("%[^\n]s", message);
     //char* message = scanInput();
-    int nameStatus = checkBoxName(box);
+    /*int nameStatus = checkBoxName(box);
     if (nameStatus == -2){ //not acceptable length
 	printf("Box name must be 5 to 25 characters long. Please try again.\n");
 	return;
@@ -138,8 +138,10 @@ void handleCreate(int sockfd){
 	printf("Box name must begin with an alphabetical character. Please try again.\n");
 	return;
     }
-
+    
     char boxName[26]; strcpy(boxName,box);
+    */
+    char* boxName = box;
     //int boxLen = strlen(boxName)+1;
     bzero(message,sizeof(message));
     sprintf(message, "CREAT %s", boxName);
@@ -153,6 +155,9 @@ void handleCreate(int sockfd){
         printf("Success! Message box %s has been created.\n", boxName);
     }else if(strcmp(message, "ER:EXIST") == 0){
         printf("Failed! Message box %s already exists.\n", boxName);
+    }
+    else if(strcmp,message, "ER:WHAT") == 0){
+        printf("Unacceptablle box name. Please try again!\n");
     }
     else{
         printf("Error. Command was unsuccessful, please try again.\n");
