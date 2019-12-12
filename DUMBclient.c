@@ -290,29 +290,21 @@ void handleNext(int sockfd){
     read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
 
     //recv(sockfd,message,1024,0);
-    /*
-    char com[10];
-    int bytes;
-    char m[1024];
-    sscanf(message, "%2s!%d!%[^\n]", com, &bytes, m);
 
-    printf("com: %s\n", com);
-    printf("len: %d\n", bytes);
-    printf("m: %s\n", m);
-    int gotLen = strlen(m);
-    char theRest[bytes+1]; bzero(theRest, sizeof(theRest));
-    char* finalMsg = malloc(bytes+1);
-    printf("gotlen: %d bytes: %d\n", gotLen, bytes);
-    if(gotLen < bytes){
-                //printf("have to read again\n");
-        recv(sockfd, theRest, bytes+1,0);
-                //printf("the rest:%s\n", theRest);
-    }
-    sprintf(finalMsg, "%s%s", m, theRest);
-    */
 
     if (strncmp(message, "OK!", 3) == 0){
-        printf("Success! Message received: %s\n", message);
+        //printf("Success! Message received: %s\n", message);
+        //read the remaining two messages:
+        //printf("here!\n");
+        int recv_size = 0;
+        read(sockfd, &recv_size, sizeof(recv_size));
+        recv_size = ntohl(recv_size);
+        printf("recv size = %d\n", recv_size);
+        char nextMessage[recv_size];
+        read(sockfd,nextMessage,recv_size);
+
+
+        printf("Success! Message received: %s\n", nextMessage);
     }else if(strcmp(message, "ER:NOOPN") == 0){
         printf("Failed! You do not currently have the box opened, so you can't close it.\n");
     }else if(strcmp(message, "ER:EMPTY") == 0){

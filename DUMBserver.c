@@ -513,25 +513,32 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             	//error output:EMPTY
     				eventOutput(ip,"ER:EMPTY");
                 strcpy(message, "ER:EMPTY");
+                continue;
             }
             else if(strcmp(nextMsg, "ER:NOOPN") == 0){
             	//error output:NOOPN
     				eventOutput(ip,"ER:NOOPN");
                 strcpy(message, "ER:NOOPN");
+                continue;
             }
             else{
 
                 int bytes = strlen(msg);
                 sprintf(message,"OK!%d!%s", bytes, msg);
 
-					//event output: NXTMG
-					eventOutput(ip,"NXTMG");
+
+                printf("%s\n", message);
+                write(connfd, message,sizeof(message));
+                //sent OK, now send the actual size of message and message itself
+                int converted = htonl(bytes);
+                write(connfd, &converted, sizeof(converted));
+                write(connfd, nextMsg, strlen(nextMsg));
+                //event output: NXTMG
+                eventOutput(ip,"NXTMG");
+                continue;
             }
 
-            //printf("%s\n", message);
-            //sendMessage(connfd, messageToSend);
-            write(connfd, message,sizeof(message));
-            continue;
+
         }
         if (strncmp(message, clientCommands[6], 6) == 0){ //DELETEBX
             bzero(message,sizeof(message));
