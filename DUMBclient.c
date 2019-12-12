@@ -206,7 +206,7 @@ void handleClose(int sockfd){
 int sendMessage(int sockfd, char* message){
 	int len = strlen(message);
 	int converted = htonl(len);
-	
+
 	//send size and string to server
 	//send(sockfd, &converted, sizeof(converted),0);
 	int size = strlen(message);
@@ -280,7 +280,28 @@ void handleNext(int sockfd){
     strcpy(message,clientCommands[4]);
     write(sockfd, message,sizeof(message)); //SEND NXTMG
     bzero(message,sizeof(message));
-    read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
+    //read(sockfd,message,sizeof(message));
+    recv(sockfd,message,1024,0);
+    char com[10];
+    int bytes;
+    char m[1024];
+    sscanf(message, "%2s!%d!%[^\n]", com, &bytes, m);
+
+    printf("com: %s\n", com);
+    printf("len: %d\n", bytes);
+    printf("m: %s\n", m);
+    int gotLen = strlen(m);
+    char theRest[bytes+1]; bzero(theRest, sizeof(theRest));
+    char* finalMsg = malloc(bytes+1);
+    printf("gotlen: %d bytes: %d\n", gotLen, bytes);
+    if(gotLen < bytes){
+                //printf("have to read again\n");
+        recv(sockfd, theRest, bytes+1,0);
+                //printf("the rest:%s\n", theRest);
+    }
+    sprintf(finalMsg, "%s%s", m, theRest);
+
+    //read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
     if (strncmp(message, "OK!", 3) == 0){
         printf("Success! Message received: %s\n", message);
     }else if(strcmp(message, "ER:NOOPN") == 0){
@@ -376,7 +397,7 @@ void readCommands(int sockfd,char* ipAddress){
 		}
 		printf("> ");
 		//bzero(message,sizeof(message));
-		
+
 		int c, i = 0;
 		char *message = "";
 
@@ -433,14 +454,14 @@ void readCommands(int sockfd,char* ipAddress){
             printf("Available commands:\nquit\ncreate\ndelete\nopen\nclose\nnext\nput\n");
             continue;
 		}
-		
+
 		//else, send the command to server to print ER:WHAT?
-			
-		printf("This is not a valid command. Try again!\n"); 
+
+		printf("This is not a valid command. Try again!\n");
 		write(sockfd,message,strlen(message));
 		continue;
-		
-		
+
+
 	}
 }
 
