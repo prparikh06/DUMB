@@ -287,7 +287,17 @@ void handleNext(int sockfd){
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
     if (strncmp(message, "OK!", 3) == 0){
-        printf("Success! Message received: %s\n", message);
+        //read the remaining two messages:
+        
+        int recv_size;
+        read(sockfd, &recv_size, sizeof(recv_size));
+        recv_size = ntohl(recv_size);
+        char nextMessage[recv_size];
+        read(sockfd,nextMessage,recv_size);
+
+
+        printf("Success! Message received: %s\n", nextMessage);
+
     }else if(strcmp(message, "ER:NOOPN") == 0){
         printf("Failed! You do not currently have the box opened, so you can't close it.\n");
     }
