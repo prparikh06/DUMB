@@ -96,6 +96,8 @@ void handleOpen(int sockfd){
     if (strcmp(message, "OK!") == 0){
         printf("Success! Message box '%s' is now open.\n", boxName);
         //printf("> ");
+    }else if(strcmp(message, "ER:NEXST") == 0){
+        printf("Box does not exist.\n");
     }else{
         printf("Error. Command was unsuccessful, please try again.\n");
     }
@@ -129,7 +131,7 @@ void handleCreate(int sockfd){
 
     //scanf("%[^\n]s", message);
     //char* message = scanInput();
-    int nameStatus = checkBoxName(box);
+    /*int nameStatus = checkBoxName(box);
     if (nameStatus == -2){ //not acceptable length
 	printf("Box name must be 5 to 25 characters long. Please try again.\n");
 	return;
@@ -140,6 +142,8 @@ void handleCreate(int sockfd){
     }
 
     char boxName[26]; strcpy(boxName,box);
+    */
+    char* boxName = box;
     //int boxLen = strlen(boxName)+1;
     bzero(message,sizeof(message));
     sprintf(message, "CREAT %s", boxName);
@@ -153,6 +157,9 @@ void handleCreate(int sockfd){
         printf("Success! Message box %s has been created.\n", boxName);
     }else if(strcmp(message, "ER:EXIST") == 0){
         printf("Failed! Message box %s already exists.\n", boxName);
+    }
+    else if(strcmp(message, "ER:WHAT") == 0){
+        printf("Unacceptablle box name. Please try again!\n");
     }
     else{
         printf("Error. Command was unsuccessful, please try again.\n");
@@ -280,8 +287,10 @@ void handleNext(int sockfd){
     strcpy(message,clientCommands[4]);
     write(sockfd, message,sizeof(message)); //SEND NXTMG
     bzero(message,sizeof(message));
-    //read(sockfd,message,sizeof(message));
-    recv(sockfd,message,1024,0);
+    read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
+
+    //recv(sockfd,message,1024,0);
+    /*
     char com[10];
     int bytes;
     char m[1024];
@@ -300,12 +309,14 @@ void handleNext(int sockfd){
                 //printf("the rest:%s\n", theRest);
     }
     sprintf(finalMsg, "%s%s", m, theRest);
+    */
 
-    //read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
     if (strncmp(message, "OK!", 3) == 0){
         printf("Success! Message received: %s\n", message);
     }else if(strcmp(message, "ER:NOOPN") == 0){
         printf("Failed! You do not currently have the box opened, so you can't close it.\n");
+    }else if(strcmp(message, "ER:EMPTY") == 0){
+        printf("Message box empty\n");
     }
     else{
         printf("Error. Command was unsuccessful, please try again.\n");

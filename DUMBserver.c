@@ -165,6 +165,18 @@ int createBox(char* name){
         ptr = ptr->next;
     }
 
+    //check box name
+    int nameStatus = checkBoxName(name);
+    if (nameStatus == -2){ //not acceptable length
+	    //printf("Box name must be 5 to 25 characters long. Please try again.\n");
+	    return -2;
+    }
+    else if (nameStatus == -1){
+	    //printf("Box name must begin with an alphabetical character. Please try again.\n");
+	    return -1;
+    }
+
+
     box* newBox = malloc(sizeof(box));
     if(!newBox){
         //printf("could not create box\n");
@@ -279,6 +291,14 @@ int deleteBox(char* name){
     return 1;
 
 
+}
+
+int checkBoxName(char* message){
+    int len = strlen(message);
+    if (len > 25 || len < 5) return -2;
+    char c = message[0];
+    if (isalpha(c)) return 0;
+    return -1;
 }
 
 int closeBox(char* name, char* target){
@@ -401,7 +421,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             int status = closeBox(name, name);
             if(status == 1){
                 eventOutput(ip, "CLSBX");
-                printf("box closed\n");
+                //printf("box closed\n");
             }
             arg->tid = 0;
             close(connfd);
@@ -477,33 +497,40 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
 
         if (strcmp(message, clientCommands[4]) == 0){ //NXTMG
             bzero(message,sizeof(message));
+
             char* msg = getNextMsg(name);
-            printf("nextmesg returned %s\n", msg);
+            //printf("nextmesg returned %s\n", msg);
             int len = strlen(msg);
             char* nextMsg = malloc(len+1);
             nextMsg = msg;
-            char* messageToSend = malloc(3+5+len);
+            //char* messageToSend = malloc(3+5+len);
+
+            //char* nextMsg = malloc(len);
+            //nextMsg = msg;
+
 
             if(strcmp(nextMsg, "ER:EMPTY") == 0){
             	//error output:EMPTY
     				eventOutput(ip,"ER:EMPTY");
-                strcpy(messageToSend, "ER:EMPTY");
+                strcpy(message, "ER:EMPTY");
             }
             else if(strcmp(nextMsg, "ER:NOOPN") == 0){
             	//error output:NOOPN
     				eventOutput(ip,"ER:NOOPN");
-                strcpy(messageToSend, "ER:NOOPN");
+                strcpy(message, "ER:NOOPN");
             }
             else{
+
                 int bytes = strlen(msg);
-                sprintf(messageToSend,"OK!%d!%s", bytes, msg);
+                sprintf(message,"OK!%d!%s", bytes, msg);
+
 					//event output: NXTMG
 					eventOutput(ip,"NXTMG");
             }
 
             //printf("%s\n", message);
-            sendMessage(connfd, messageToSend);
-            //write(connfd, message,sizeof(message));
+            //sendMessage(connfd, messageToSend);
+            write(connfd, message,sizeof(message));
             continue;
         }
         if (strncmp(message, clientCommands[6], 6) == 0){ //DELETEBX
@@ -523,10 +550,16 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             //printf("Create box %s\n", boxName);
             //CREATE BOX AND RETURN STATUS
 
-            /// TODO: HAVE TO CHECK FOR ACCEPTABLE BOX NAMES
+
             int status = createBox(boxName);
+            //printf("box status %d\n", status);
             bzero(message,sizeof(message));
-            if(status == 0){
+            if (status == -1 || status == -2) {
+                //error output: WHAT - should be between 5 and 25 characters and start with alphabetical char
+                eventOutput(ip, "ER:WHAT");
+                strcpy(message,"ER:WHAT");
+            }
+            else if(status == 0){
             	//error output:EXIST
     				eventOutput(ip,"ER:EXIST");
                 strcpy(message,"ER:EXIST");
@@ -655,7 +688,12 @@ void* interpretCommands(void* connfdPtr){
 
 	    		int status = createBox(boxName);
             bzero(message,sizeof(message));
-            if(status == 0){
+            if (status == -1 || status == -2) {
+                //error output: WHAT - should be between 5 and 25 characters and start with alphabetical char
+                eventOutput(ip, "ER:WHAT");
+                strcpy(message,"ER:WHAT");
+            }
+            else if(status == 0){
             	//event output: EXIST
 					eventOutput(ip,"ER:EXIST");
                 strcpy(message,"ER:EXIST");
@@ -754,6 +792,10 @@ int main(int argc, char* argv[]) {
     struct sockaddr_in servaddr, clientaddr;
 
     int port_num = atoi(argv[1]);
+    if(port_num < 4000){
+        printf("Please use a port number greater than 4000\n");
+        return 0;
+    }
 
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
