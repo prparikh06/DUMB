@@ -336,7 +336,7 @@ int closeBox(char* name, char* target){
 }
 
 int putMessage(char* name, char* msg){
-    printf("my message: %s\n", msg);
+    //printf("my message: %s\n", msg);
 
     int lock_status = pthread_mutex_lock(&globalLock);
     if (lock_status < 0){
@@ -423,7 +423,8 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 eventOutput(ip, "CLSBX");
                 //printf("box closed\n");
             }
-            arg->tid = 0;
+	    deleteNode(&tHead,arg);
+            //arg->tid = 0;
             close(connfd);
 	    		//event output: GDBYE and disconnect
 	    		eventOutput(ip, "GDBYE");
@@ -513,13 +514,16 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             	//error output:EMPTY
     				eventOutput(ip,"ER:EMPTY");
                 strcpy(message, "ER:EMPTY");
-                continue;
+                 write(connfd, message,sizeof(message));
+                
+		continue;
             }
             else if(strcmp(nextMsg, "ER:NOOPN") == 0){
             	//error output:NOOPN
     				eventOutput(ip,"ER:NOOPN");
                 strcpy(message, "ER:NOOPN");
-                continue;
+ 		 write(connfd, message,sizeof(message));
+                               continue;
             }
             else{
 
@@ -527,7 +531,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 sprintf(message,"OK!%d!%s", bytes, msg);
 
 
-                printf("%s\n", message);
+                //printf("%s\n", message);
                 write(connfd, message,sizeof(message));
                 //sent OK, now send the actual size of message and message itself
                 int converted = htonl(bytes);
@@ -639,7 +643,8 @@ void* interpretCommands(void* connfdPtr){
 	    continue;
 		}
 		if (strcmp(message, clientCommands[1]) == 0){ //CLIENT SAID GDBYE
-            arg->tid = 0;
+            	deleteNode(&tHead, arg);
+		//arg->tid = 0;
              close(connfd);
 				//event output; GDBYE and disconnected
 				eventOutput(ip,"GDBYE");

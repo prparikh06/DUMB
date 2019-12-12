@@ -261,8 +261,8 @@ void handlePut(int sockfd){
     int total = 6+4+1+numBytes+1;
     char* theMesseage = malloc(total);
     sprintf(theMesseage, "PUTMG!%d!%s", numBytes, msg);
-    printf("message: %s\n", theMesseage);
-
+    //printf("message: %s\n", theMesseage);
+	
     //write(sockfd, message,sizeof(message)); //SEND MSG
     sendMessage(sockfd,theMesseage);
     char weWant[1024]; sprintf(weWant,"OK!%d", numBytes);
@@ -270,7 +270,7 @@ void handlePut(int sockfd){
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, weWant) == 0){
-        printf("Success! Message has been put.\n");
+        printf("Success! Message '%s' has been put.\n",msg);
     }else if(strcmp(message, "ER:NOOPN") == 0){
         printf("Failed! You do not currently have the box opened, so you can't close it.\n");
     }
@@ -299,7 +299,7 @@ void handleNext(int sockfd){
         int recv_size = 0;
         read(sockfd, &recv_size, sizeof(recv_size));
         recv_size = ntohl(recv_size);
-        printf("recv size = %d\n", recv_size);
+        //printf("recv size = %d\n", recv_size);
         char nextMessage[recv_size];
         read(sockfd,nextMessage,recv_size);
 
