@@ -425,7 +425,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             char com[10];
             int bytes;
             char m[1024];
-            sscanf(message, "%5s!%d!%m[^\n]", com, &bytes, m);
+            sscanf(message, "%5s!%d!%[^\n]", com, &bytes, m);
             //printf("com: %s\n", com);
             //printf("len: %d\n", bytes);
             //printf("m: %s\n", m);
@@ -460,7 +460,8 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             bzero(message,sizeof(message));
             char* nextMsg = getNextMsg(name);
             //printf("nextmesg returned %s\n", nextMsg);
-            int len = strlen(nextMsg)+1;
+            printf("leng of next is = %d\n", strlen(nextMsg));
+	    int len = strlen(nextMsg)+1;
             //char* nextMsg = malloc(len);
             //nextMsg = msg;
 
@@ -476,7 +477,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             }
             else{
                 int bytes = strlen(nextMsg);
-                sprintf(message,"OK!%d!%s", bytes, msg);
+                sprintf(message,"OK!%d!%s", bytes, nextMsg);
 					//event output: NXTMG
 					eventOutput(ip,"NXTMG");
             }
