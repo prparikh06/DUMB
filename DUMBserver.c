@@ -425,7 +425,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             char com[10];
             int bytes;
             char m[1024];
-            sscanf(message, "%5s!%d!%[^\n]", com, &bytes, m);
+            sscanf(message, "%5s!%d!%m[^\n]", com, &bytes, m);
             //printf("com: %s\n", com);
             //printf("len: %d\n", bytes);
             //printf("m: %s\n", m);
@@ -458,11 +458,11 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
 
         if (strcmp(message, clientCommands[4]) == 0){ //NXTMG
             bzero(message,sizeof(message));
-            char* msg = getNextMsg(name);
-            //printf("nextmesg returned %s\n", msg);
-            int len = strlen(msg)+1;
-            char* nextMsg = malloc(len);
-            nextMsg = msg;
+            char* nextMsg = getNextMsg(name);
+            //printf("nextmesg returned %s\n", nextMsg);
+            int len = strlen(nextMsg)+1;
+            //char* nextMsg = malloc(len);
+            //nextMsg = msg;
 
             if(strcmp(nextMsg, "ER:EMPTY") == 0){
             	//error output:EMPTY
@@ -475,7 +475,7 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
                 strcpy(message, "ER:NOOPN");
             }
             else{
-                int bytes = strlen(msg)+1;
+                int bytes = strlen(nextMsg);
                 sprintf(message,"OK!%d!%s", bytes, msg);
 					//event output: NXTMG
 					eventOutput(ip,"NXTMG");
