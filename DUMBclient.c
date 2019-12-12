@@ -154,7 +154,7 @@ void handleCreate(int sockfd){
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, "OK!") == 0){
-        printf("Success! Message box %s has been created.\n", boxName);
+        printf("Success! Message box '%s' has been created.\n", boxName);
     }else if(strcmp(message, "ER:EXIST") == 0){
         printf("Failed! Message box %s already exists.\n", boxName);
     }
@@ -201,7 +201,7 @@ void handleClose(int sockfd){
     bzero(message,sizeof(message));
     read(sockfd,message,sizeof(message)); //WAIT FOR SUCCESS
     if (strcmp(message, "OK!") == 0){
-        printf("Success! Message box %s has been closed.\n", boxName);
+        printf("Success! Message box '%s' has been closed.\n", boxName);
     }else if(strcmp(message, "ER:NOOPN") == 0){
         printf("Failed! You do not currently have the box opened, so you can't close it.\n", boxName);
     }
