@@ -507,13 +507,14 @@ int openCommands(char* name, int connfd, struct tArgs* arg){
             else{
                 int bytes = strlen(nextMsg);
                 sprintf(message,"OK!%d!%s", bytes, nextMsg);
-				//event output: NXTMG
-				eventOutput(ip,"NXTMG");
-               //printf("%s\n", message);
+		//event output: NXTMG
+		eventOutput(ip,"NXTMG");
+                printf("%s\n", message);
                 write(connfd, message,sizeof(message));
                 //sent OK, now send the actual size of message and message itself
-                write(connfd, htonl(bytes), sizeof(htonl(bytes)));
-                write(connfd, nextMsg, bytes);
+                int converted = htonl(bytes);
+		write(connfd, &converted, sizeof(converted));
+                write(connfd, nextMsg, strlen(nextMsg));
                 continue;
             }
             /*

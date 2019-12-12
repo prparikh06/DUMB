@@ -288,10 +288,11 @@ void handleNext(int sockfd){
     read(sockfd,message,sizeof(message)); //WAIT FOR MESSAGE
     if (strncmp(message, "OK!", 3) == 0){
         //read the remaining two messages:
-        
-        int recv_size;
+        printf("here!\n");
+        int recv_size = 0;
         read(sockfd, &recv_size, sizeof(recv_size));
         recv_size = ntohl(recv_size);
+	printf("recv size = %d\n", recv_size);
         char nextMessage[recv_size];
         read(sockfd,nextMessage,recv_size);
 
