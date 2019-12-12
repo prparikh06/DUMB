@@ -191,7 +191,7 @@ int createBox(char* name){
 
     newBox->next = head;
     head = newBox;
-    printBox();
+    //printBox();
     //sleep(10);
     //printf("sleeping...\n");
     //unlock
@@ -255,7 +255,7 @@ int deleteBox(char* name){
     box* ptr = head;
     box* prev = head;
     int found = 0;
-    printBox();
+    //printBox();
     while(ptr != NULL){
         //printf("currbox name: %s, newname: %s\n", ptr->name, name);
         if(strcmp(ptr->name, name) == 0){
@@ -287,7 +287,7 @@ int deleteBox(char* name){
     free(ptr->name);
     free(ptr->queue);
     free(ptr);
-    printBox();
+    //printBox();
     return 1;
 
 
