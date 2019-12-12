@@ -156,7 +156,7 @@ void handleCreate(int sockfd){
     }else if(strcmp(message, "ER:EXIST") == 0){
         printf("Failed! Message box %s already exists.\n", boxName);
     }
-    else if(strcmp,message, "ER:WHAT") == 0){
+    else if(strcmp(message, "ER:WHAT") == 0){
         printf("Unacceptablle box name. Please try again!\n");
     }
     else{
